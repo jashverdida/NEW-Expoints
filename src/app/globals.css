@@ -1,0 +1,594 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EXPoints design tokens
+
+   Keeps the original DNA — deep royal blue, PlayStation glyphs, star ratings,
+   the panda — but pushes contrast, depth and motion much harder. The old build
+   was one flat navy gradient; this one layers an aurora mesh, a starfield and
+   glass surfaces so the page has actual depth behind the content.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── Surfaces: darkest at the bottom of the stack ── */
+  --color-abyss: #03060f;
+  --color-void: #050b1e;
+  --color-deep: #071232;
+  --color-royal: #0c2168;
+  --color-royal-lit: #123099;
+
+  /* ── Brand: electric blue, straight from the original logo ── */
+  --color-brand-50: #eaf6ff;
+  --color-brand-100: #cfeaff;
+  --color-brand-200: #a3d8ff;
+  --color-brand-300: #6cc2ff;
+  --color-brand-400: #38a0ff;
+  --color-brand-500: #1b83f5;
+  --color-brand-600: #0f65d4;
+  --color-brand-700: #0d4da6;
+  --color-brand-800: #103f80;
+  --color-brand-900: #12356a;
+
+  /* ── Accents ── */
+  --color-plasma: #00e5ff; /* hover glows, focus rings */
+  --color-violet: #8b5cf6; /* elite tier, secondary CTAs */
+  --color-magenta: #e879f9;
+  --color-exp: #fbbf24; /* EXP + stars — always gold */
+  --color-exp-deep: #f59e0b;
+  --color-danger: #f43f5e;
+  --color-success: #34d399;
+
+  /* ── Text ── */
+  --color-ink: #f2f7ff;
+  --color-ink-muted: #9fb4dd;
+  --color-ink-faint: #6b82ad;
+
+  /* ── Type ── */
+  --font-display: var(--font-sora), system-ui, sans-serif;
+  --font-sans: var(--font-poppins), system-ui, sans-serif;
+  --font-mono: var(--font-mono-stat), ui-monospace, monospace;
+
+  /* ── Radii ── */
+  --radius-card: 1.25rem;
+  --radius-pill: 999px;
+
+  /* ── Motion ── */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Base
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+* {
+  border-color: color-mix(in oklab, var(--color-brand-400) 14%, transparent);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--color-abyss);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The aurora field. Fixed, so it never scrolls away, and pointer-events:none so
+   it can't eat clicks. Three offset radial gradients drifting at different
+   speeds reads as depth without costing a canvas or a WebGL context. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(48rem 34rem at 12% 8%, color-mix(in oklab, var(--color-royal-lit) 55%, transparent), transparent 62%),
+    radial-gradient(42rem 30rem at 88% 18%, color-mix(in oklab, var(--color-violet) 26%, transparent), transparent 60%),
+    radial-gradient(52rem 38rem at 62% 92%, color-mix(in oklab, var(--color-brand-600) 38%, transparent), transparent 64%),
+    linear-gradient(168deg, var(--color-void) 0%, var(--color-deep) 45%, var(--color-abyss) 100%);
+  animation: aurora-drift 28s ease-in-out infinite alternate;
+}
+
+/*
+ * Starfield plus a fine film grain.
+ *
+ * The grain is an inline SVG feTurbulence at very low opacity. It's the detail
+ * that keeps large dark areas from looking like flat CSS gradients — screens
+ * read it as texture rather than noise, and it costs nothing to composite.
+ */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 34% 62%, rgba(190, 225, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 68% 28%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1px 1px at 82% 74%, rgba(180, 215, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 52% 88%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.5px 1.5px at 92% 44%, rgba(210, 235, 255, 0.5), transparent);
+  background-size: 100% 100%;
+  animation: twinkle 9s ease-in-out infinite;
+}
+
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  /* Above the atmosphere (z-0), below page content (z-10). */
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes aurora-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(2%, -1.5%, 0) scale(1.06); }
+  100% { transform: translate3d(-1.5%, 1.5%, 0) scale(1.02); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.65; }
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-brand-400) 42%, transparent);
+  color: #fff;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-abyss); }
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 2px solid var(--color-abyss);
+  background: color-mix(in oklab, var(--color-brand-500) 55%, transparent);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--color-brand-400) 80%, transparent);
+}
+
+/* ── Focus: visible, on-brand, never removed ── */
+:focus-visible {
+  outline: 2px solid var(--color-plasma);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Component utilities
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* Glass panel — the base surface for every card in the app. */
+  .glass {
+    background: linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--color-brand-900) 46%, transparent),
+      color-mix(in oklab, var(--color-void) 78%, transparent)
+    );
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid color-mix(in oklab, var(--color-brand-300) 16%, transparent);
+    box-shadow:
+      0 1px 0 0 color-mix(in oklab, #fff 8%, transparent) inset,
+      0 18px 48px -18px rgba(0, 0, 0, 0.85);
+  }
+
+  .glass-strong {
+    background: linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--color-royal) 62%, transparent),
+      color-mix(in oklab, var(--color-deep) 88%, transparent)
+    );
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid color-mix(in oklab, var(--color-brand-300) 22%, transparent);
+    box-shadow:
+      0 1px 0 0 color-mix(in oklab, #fff 10%, transparent) inset,
+      0 24px 60px -20px rgba(0, 0, 0, 0.9);
+  }
+
+  /*
+   * Cards lift slightly and warm their border on hover.
+   *
+   * The lift is 2px, not 6, and the glow is restrained — at rest a card should
+   * look like a clean surface, not a lit sign. The energy belongs in the
+   * response to input, not the idle state.
+   */
+  .card-interactive {
+    transition:
+      transform 0.3s var(--ease-out-expo),
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--color-brand-400) 38%, transparent);
+    box-shadow:
+      0 1px 0 0 color-mix(in oklab, #fff 10%, transparent) inset,
+      0 24px 52px -24px rgba(0, 0, 0, 0.95),
+      0 0 26px -14px color-mix(in oklab, var(--color-brand-400) 45%, transparent);
+  }
+
+  /* Primary CTA with a sweep highlight on hover. */
+  .btn-primary {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--color-brand-400), var(--color-brand-600));
+    color: #041124;
+    font-weight: 700;
+    box-shadow:
+      0 8px 24px -8px color-mix(in oklab, var(--color-brand-400) 90%, transparent),
+      0 1px 0 0 color-mix(in oklab, #fff 30%, transparent) inset;
+    transition: transform 0.25s var(--ease-spring), box-shadow 0.25s ease, filter 0.25s ease;
+  }
+  .btn-primary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.45) 50%, transparent 80%);
+    transform: translateX(-120%);
+    transition: transform 0.7s var(--ease-out-expo);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    box-shadow:
+      0 14px 34px -8px color-mix(in oklab, var(--color-brand-400) 100%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--color-plasma) 60%, transparent);
+  }
+  .btn-primary:hover::after { transform: translateX(120%); }
+  .btn-primary:active { transform: translateY(0) scale(0.985); }
+
+  .btn-ghost {
+    border: 1px solid color-mix(in oklab, var(--color-brand-300) 26%, transparent);
+    background: color-mix(in oklab, var(--color-brand-900) 30%, transparent);
+    color: var(--color-ink);
+    font-weight: 600;
+    transition: all 0.25s var(--ease-out-expo);
+  }
+  .btn-ghost:hover {
+    border-color: color-mix(in oklab, var(--color-brand-400) 60%, transparent);
+    background: color-mix(in oklab, var(--color-brand-700) 40%, transparent);
+    transform: translateY(-1px);
+  }
+
+  /* Text input. Focus lights the border and drops a soft outer glow. */
+  .field {
+    width: 100%;
+    border-radius: 0.85rem;
+    border: 1px solid color-mix(in oklab, var(--color-brand-300) 20%, transparent);
+    background: color-mix(in oklab, var(--color-abyss) 62%, transparent);
+    padding: 0.8rem 1rem;
+    color: var(--color-ink);
+    transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+  }
+  .field::placeholder { color: var(--color-ink-faint); }
+  .field:focus {
+    outline: none;
+    border-color: color-mix(in oklab, var(--color-brand-400) 75%, transparent);
+    background: color-mix(in oklab, var(--color-abyss) 78%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-brand-400) 16%, transparent);
+  }
+
+  /*
+   * Gradient text for headlines and the wordmark.
+   *
+   * Deliberately restrained: the sweep is slow (11s) and the gradient stays
+   * close to white with only a brief brand-blue pass. An aggressive, fast
+   * rainbow shimmer is the single thing that most makes an interface read as
+   * amateur — this keeps the life without the cheapness.
+   */
+  .text-gradient {
+    background: linear-gradient(
+      110deg,
+      #ffffff 0%,
+      #ffffff 38%,
+      var(--color-brand-200) 50%,
+      #ffffff 62%,
+      #ffffff 100%
+    );
+    background-size: 260% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-shimmer 11s linear infinite;
+  }
+
+  .text-gradient-exp {
+    background: linear-gradient(
+      110deg,
+      var(--color-exp) 0%,
+      var(--color-exp) 40%,
+      #fff4d2 52%,
+      var(--color-exp) 64%,
+      var(--color-exp) 100%
+    );
+    background-size: 260% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-shimmer 9s linear infinite;
+  }
+
+  /* Static variant for dense UI, where animated text is a distraction. */
+  .text-gradient-static {
+    background: linear-gradient(120deg, #ffffff, var(--color-brand-200));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Numeric HUD readouts — tabular so counters don't jitter as they tick. */
+  .stat {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* Floating PlayStation glyph. Only per-instance values (position, size,
+     animation) are set inline; these constants live here so the browser's
+     style normalisation can't cause a hydration mismatch. */
+  .glyph {
+    filter: drop-shadow(0 0 7px rgba(56, 160, 255, 0.45));
+    will-change: transform, opacity;
+  }
+
+  /* Section heading with a small glowing rule beside it. */
+  .rule-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    color: var(--color-ink-muted);
+  }
+  .rule-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-brand-400) 55%, transparent),
+      transparent
+    );
+  }
+}
+
+@layer utilities {
+  .font-display { font-family: var(--font-display); }
+
+  /* Respects the iOS home indicator so the mobile tab bar isn't clipped. */
+  .pb-safe { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+  .h-safe-nav { height: calc(4.25rem + env(safe-area-inset-bottom)); }
+
+  .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  /* Fades the right edge of horizontally scrolling chip rows on mobile. */
+  .fade-edge-x {
+    mask-image: linear-gradient(90deg, #000 0, #000 88%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 88%, transparent 100%);
+  }
+
+  .glow-brand { box-shadow: 0 0 36px -8px color-mix(in oklab, var(--color-brand-400) 85%, transparent); }
+  .glow-exp { box-shadow: 0 0 36px -8px color-mix(in oklab, var(--color-exp) 85%, transparent); }
+
+  .animate-float { animation: float 6.5s ease-in-out infinite; }
+  .animate-rise { animation: rise 0.6s var(--ease-out-expo) both; }
+  .animate-pop { animation: pop 0.32s var(--ease-spring); }
+  .animate-pulse-ring { animation: pulse-ring 2.2s ease-out infinite; }
+
+  /* Slow enough to read as ambient rather than as a carousel demanding
+     attention. Pauses on hover so covers can be looked at. */
+  .animate-boxart-scroll {
+    animation: boxart-scroll 75s linear infinite;
+  }
+  .animate-boxart-scroll:hover {
+    animation-play-state: paused;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Keyframes
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes text-shimmer {
+  to { background-position: 220% center; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-brand-400) 55%, transparent); }
+  70% { box-shadow: 0 0 0 14px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* EXP bar fill sweep. */
+@keyframes bar-sheen {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(320%); }
+}
+
+/* Landing-page game ticker. The track holds the list twice, so translating it
+   -50% lands exactly on the duplicate and the seam is invisible. */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ── Glyph motion set ──────────────────────────────────────────────────────
+   Four behaviours so the field never reads as one mechanical loop. `drift` and
+   `sway` keep the opacity set inline by the component; `pulse` and `breathe`
+   drive their own, which is why the component leaves opacity undefined for
+   those two. */
+
+/* Floats and rotates at steady opacity — the original behaviour. */
+@keyframes glyph-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(0, -28px, 0) rotate(180deg); }
+}
+
+/* Fades in while scaling up, out while scaling down. */
+@keyframes glyph-pulse {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  15% { opacity: 0.42; }
+  50% { opacity: 0.5; transform: scale(1.15) rotate(90deg); }
+  85% { opacity: 0.3; }
+}
+
+/* Lazy horizontal drift with a slow spin. */
+@keyframes glyph-sway {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  33% { transform: translate3d(18px, -14px, 0) rotate(120deg); }
+  66% { transform: translate3d(-14px, -22px, 0) rotate(240deg); }
+}
+
+/* Holds position; opacity swells and recedes. */
+@keyframes glyph-breathe {
+  0%, 100% { opacity: 0.05; transform: scale(0.85); }
+  50% { opacity: 0.4; transform: scale(1.05); }
+}
+
+/* ── Atmosphere effects ────────────────────────────────────────────────────
+   Full-viewport themed backgrounds (see components/ui/Atmosphere.tsx). All are
+   transform/opacity-only so they stay on the compositor and never trigger
+   layout. */
+
+/* Fresh Content — night sky. */
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.35); }
+}
+
+/* A streak that crosses, then waits out the rest of a long cycle. The second
+   (14s) duration on the element stretches the gap between appearances. */
+@keyframes shooting-star {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(18deg) scaleX(0.3); }
+  6% { opacity: 1; }
+  22% { opacity: 1; transform: translate3d(42vw, 22vh, 0) rotate(18deg) scaleX(1); }
+  30%, 100% { opacity: 0; transform: translate3d(52vw, 27vh, 0) rotate(18deg) scaleX(0.2); }
+}
+
+/* Trending — embers rising and guttering out. Also reused for gold motes. */
+@keyframes ember-rise {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.6); }
+  10% { opacity: 1; }
+  70% { opacity: 0.8; }
+  100% { opacity: 0; transform: translate3d(var(--drift, 0px), -100vh, 0) scale(1.1); }
+}
+
+@keyframes heat-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* Ranks — light shafts breathing in a trophy hall. */
+@keyframes ray-breathe {
+  0%, 100% { opacity: 0.4; transform: skewX(-8deg) scaleY(1); }
+  50% { opacity: 0.9; transform: skewX(-8deg) scaleY(1.06); }
+}
+
+/* Saved — dust turning slowly in lamplight. */
+@keyframes dust-float {
+  0%, 100% { opacity: 0.15; transform: translate3d(0, 0, 0); }
+  50% { opacity: 0.7; transform: translate3d(var(--drift, 0px), -28px, 0); }
+}
+
+/* ── Branded loader ────────────────────────────────────────────────────────
+   An indeterminate sweep travelling the EXP track. Deliberately not a
+   percentage: we don't know one, and inventing it would be a lie the user can
+   feel when it stalls at 80%. */
+.loader-sweep {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-brand-400),
+    var(--color-plasma),
+    transparent
+  );
+  box-shadow: 0 0 16px -2px var(--color-brand-400);
+  animation: loader-sweep 1.25s ease-in-out infinite;
+}
+
+@keyframes loader-sweep {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(410%); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(0.97); }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Page-hero sheen sweeping left to right across the banner. */
+@keyframes hero-sheen {
+  0% { transform: translateX(0) skewX(12deg); }
+  55%, 100% { transform: translateX(420%) skewX(12deg); }
+}
+
+/* Hero emoji: a gentle wobble with a slight overshoot in scale. */
+@keyframes hero-icon {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-9deg) scale(1.08); }
+  50% { transform: rotate(0deg) scale(1); }
+  75% { transform: rotate(9deg) scale(1.08); }
+}
+
+/* Box-art rail. The track holds the strip pair twice, so -50% lands exactly on
+   the duplicate and the loop seam is invisible. */
+@keyframes boxart-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, -50%, 0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Accessibility — honour reduced motion everywhere
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
