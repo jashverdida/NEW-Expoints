@@ -165,6 +165,7 @@ create table if not exists posts (
   title          varchar(160) not null,
   content        text not null,
   rating         smallint check (rating between 1 and 10),  -- the review score
+  image_url      text,                                      -- optional attachment
 
   star_count     integer not null default 0,
   comment_count  integer not null default 0,
@@ -916,7 +917,7 @@ create or replace view post_feed
 with (security_invoker = true)
 as
 select
-  p.id, p.title, p.content, p.rating,
+  p.id, p.title, p.content, p.rating, p.image_url,
   p.star_count, p.comment_count, p.view_count, p.hot_score,
   p.is_hidden, p.created_at, p.updated_at,
   p.author_id,
@@ -983,6 +984,94 @@ create policy "avatars owner delete" on storage.objects
   for delete using (
     bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text
   );
+
+
+-- ═══════════════════════════════════════════════════════════════════════════
+--  STORAGE — post image attachments
+-- ═══════════════════════════════════════════════════════════════════════════
+insert into storage.buckets (id, name, public)
+values ('post-images', 'post-images', true)
+on conflict (id) do nothing;
+
+drop policy if exists "post images public read"  on storage.objects;
+drop policy if exists "post images owner write"  on storage.objects;
+drop policy if exists "post images owner update" on storage.objects;
+drop policy if exists "post images owner delete" on storage.objects;
+
+create policy "post images public read" on storage.objects
+  for select using (bucket_id = 'post-images');
+
+-- Files live under a folder named after the uploader's uuid, so one user can
+-- never overwrite another's upload.
+create policy "post images owner write" on storage.objects
+  for insert with check (
+    bucket_id = 'post-images'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "post images owner update" on storage.objects
+  for update using (
+    bucket_id = 'post-images'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Admins can remove anyone's image; everyone else only their own.
+create policy "post images owner delete" on storage.objects
+  for delete using (
+    bucket_id = 'post-images'
+    and ((storage.foldername(name))[1] = auth.uid()::text or is_admin())
+  );
+
+
+-- ═══════════════════════════════════════════════════════════════════════════
+--  MODERATION — flag uploaded images for review
+-- ═══════════════════════════════════════════════════════════════════════════
+/*
+ * Fans out one notification per admin whenever a post gains an image.
+ *
+ * Deliberately separate from on_post_change: image review is a moderation
+ * concern, and isolating it means the EXP path is untouched if this is ever
+ * changed or switched off. Fires on INSERT and on UPDATE of image_url, so
+ * editing a post to slip an image in afterwards can't bypass review.
+ */
+create or replace function notify_admins_of_post_image()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  author_name text;
+begin
+  if new.image_url is null then
+    return new;
+  end if;
+
+  if tg_op = 'UPDATE' and old.image_url is not distinct from new.image_url then
+    return new;
+  end if;
+
+  select username into author_name from profiles where id = new.author_id;
+
+  insert into notifications (user_id, actor_id, type, title, body, link)
+  select
+    a.id,
+    new.author_id,
+    'moderation',
+    'Image needs review',
+    '@' || coalesce(author_name, 'Someone') || ' attached an image to "' ||
+      left(new.title, 80) || '"',
+    '/post/' || new.id
+  from profiles a
+  where a.role = 'admin'
+    and a.id is distinct from new.author_id;
+
+  return new;
+end $$;
+
+drop trigger if exists trg_post_image_review on posts;
+create trigger trg_post_image_review
+  after insert or update of image_url on posts
+  for each row execute function notify_admins_of_post_image();
 
 
 -- ═══════════════════════════════════════════════════════════════════════════

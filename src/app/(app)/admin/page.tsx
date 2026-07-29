@@ -6,6 +6,7 @@ import {
   EyeOff,
   Flag,
   Gamepad2,
+  ImageIcon,
   MessageSquare,
   Search,
   Shield,
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type Tab = "users" | "reports" | "hidden";
+type Tab = "users" | "reports" | "hidden" | "images";
 
 export default async function AdminPage({
   searchParams,
@@ -37,7 +38,7 @@ export default async function AdminPage({
   if (profile.role !== "admin") redirect("/feed");
 
   const { tab: rawTab, q } = await searchParams;
-  const tab: Tab = ["users", "reports", "hidden"].includes(rawTab ?? "")
+  const tab: Tab = ["users", "reports", "hidden", "images"].includes(rawTab ?? "")
     ? (rawTab as Tab)
     : "users";
 
@@ -67,8 +68,25 @@ export default async function AdminPage({
   let users: Profile[] = [];
   let reports: Report[] = [];
   let hiddenPosts: FeedPostWithViewer[] = [];
+  let imagePosts: FeedPostWithViewer[] = [];
 
-  if (tab === "users") {
+  const asViewerPosts = (rows: unknown): FeedPostWithViewer[] =>
+    ((rows ?? []) as FeedPost[]).map((p) => ({
+      ...p,
+      viewer_starred: false,
+      viewer_bookmarked: false,
+    }));
+
+  if (tab === "images") {
+    // Newest first — the point is to catch a bad upload quickly.
+    const { data } = await supabase
+      .from("post_feed")
+      .select("*")
+      .not("image_url", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(40);
+    imagePosts = asViewerPosts(data);
+  } else if (tab === "users") {
     let query = supabase
       .from("profiles")
       .select("*")
@@ -92,16 +110,13 @@ export default async function AdminPage({
       .eq("is_hidden", true)
       .order("created_at", { ascending: false })
       .limit(40);
-    hiddenPosts = ((data ?? []) as FeedPost[]).map((p) => ({
-      ...p,
-      viewer_starred: false,
-      viewer_bookmarked: false,
-    }));
+    hiddenPosts = asViewerPosts(data);
   }
 
   const TABS: { value: Tab; label: string; icon: React.ElementType; badge?: number }[] = [
     { value: "users", label: "Users", icon: Users },
     { value: "reports", label: "Reports", icon: Flag, badge: pendingReports.count ?? 0 },
+    { value: "images", label: "Images", icon: ImageIcon },
     { value: "hidden", label: "Hidden", icon: EyeOff },
   ];
 
@@ -218,6 +233,30 @@ export default async function AdminPage({
               <ReportRow key={report.id} report={report} />
             ))}
           </ul>
+        ))}
+
+      {tab === "images" &&
+        (imagePosts.length === 0 ? (
+          <div className="glass rounded-3xl px-6 py-16 text-center">
+            <ImageIcon className="mx-auto mb-3 h-9 w-9 text-ink-faint" />
+            <p className="font-display font-bold">No uploads yet</p>
+            <p className="mt-1.5 text-sm text-ink-muted">
+              Every review with an attached image lands here for review.
+            </p>
+          </div>
+        ) : (
+          <>
+            <p className="glass mb-4 flex items-center gap-2.5 rounded-2xl px-4 py-3 text-sm text-ink-muted">
+              <ImageIcon className="h-4 w-4 shrink-0 text-brand-300" />
+              Newest uploads first. Use a post&apos;s menu to hide or delete anything that
+              shouldn&apos;t be here.
+            </p>
+            <div className="space-y-4">
+              {imagePosts.map((post) => (
+                <PostCard key={post.id} post={post} viewer={profile} />
+              ))}
+            </div>
+          </>
         ))}
 
       {tab === "hidden" &&

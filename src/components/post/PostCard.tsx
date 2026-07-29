@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -159,7 +160,7 @@ export function PostCard({
                 onClick={() => setMenuOpen(false)}
                 aria-hidden="true"
               />
-              <div className="glass-strong absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-xl p-1">
+              <div className="popover absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-xl p-1">
                 <button
                   type="button"
                   onClick={handleCopyLink}
@@ -254,6 +255,35 @@ export function PostCard({
           <RatingBadge rating={post.rating} size="md" className="shrink-0" />
         )}
       </div>
+
+      {/*
+        ── Attachment ──
+        Sized by aspect ratio rather than a fixed height, so a tall screenshot
+        and a wide banner both sit correctly instead of one being cropped to
+        nothing. `object-cover` inside a capped 16:9 frame keeps every card in
+        the feed the same rhythm however varied the uploads are.
+      */}
+      {post.image_url && (
+        <div
+          className={cn(
+            "relative z-10 mt-3.5 overflow-hidden rounded-2xl border border-white/10 bg-abyss/40",
+            compact ? "aspect-[16/7]" : "aspect-[16/9]",
+          )}
+        >
+          <Image
+            src={post.image_url}
+            alt=""
+            fill
+            sizes="(max-width: 768px) 100vw, 42rem"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          />
+          {/* Keeps the bottom edge from clashing with the action row below. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-void/70 to-transparent"
+          />
+        </div>
+      )}
 
       {/* ── Actions ── */}
       <footer className="relative z-20 mt-4 flex items-center gap-2">

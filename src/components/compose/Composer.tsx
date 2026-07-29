@@ -4,6 +4,7 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertCircle, Check, ChevronDown, Gamepad2, Loader2, Send } from "lucide-react";
 import { createPost } from "@/lib/actions";
+import { ImageDropzone } from "@/components/compose/ImageDropzone";
 import { EXP_REWARDS } from "@/lib/exp";
 import type { ActionResult, Game } from "@/lib/types";
 import { cn, ratingVerdict } from "@/lib/utils";
@@ -123,7 +124,7 @@ function GamePicker({ games, defaultValue }: { games: Game[]; defaultValue?: str
         <div
           id="game-listbox"
           role="listbox"
-          className="glass-strong absolute z-30 mt-2 max-h-64 w-full overflow-y-auto rounded-xl p-1.5"
+          className="popover absolute z-30 mt-2 max-h-64 w-full overflow-y-auto rounded-xl p-1.5"
         >
           {matches.map((game, i) => (
             <button
@@ -229,7 +230,7 @@ function RatingSlider({ defaultValue = 8 }: { defaultValue?: number }) {
   );
 }
 
-export function Composer({ games }: { games: Game[] }) {
+export function Composer({ games, userId }: { games: Game[]; userId: string }) {
   const [state, action] = useActionState<ActionResult | null, FormData>(createPost, null);
 
   // Draft autosave — the old inline composer lost everything on any navigation.
@@ -314,6 +315,8 @@ export function Composer({ games }: { games: Game[] }) {
           className="field resize-y leading-relaxed"
         />
       </label>
+
+      <ImageDropzone userId={userId} />
 
       <div className="flex flex-col items-stretch gap-3 border-t border-white/8 pt-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs leading-relaxed text-ink-faint">

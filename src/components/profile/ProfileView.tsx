@@ -71,36 +71,58 @@ export function ProfileView({
         />
 
         <div className="relative px-5 pb-6 sm:px-8">
-          <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end">
+          {/*
+            Name sits beside the avatar, but only the AVATAR carries the
+            negative margin — that's the whole fix.
+
+            Previously the negative margin was on this row, which lifted the
+            name with it and pushed its top over the banner's lower edge. Now
+            the row starts at the banner edge and `items-end` bottom-aligns
+            both: the avatar's margin box is shortened by the pull, so it
+            overhangs upward while the text stays entirely below the banner.
+          */}
+          <div className="flex items-end gap-4">
             <Avatar
               username={profile.username}
               avatarUrl={profile.avatar_url}
               level={profile.level}
               size="xl"
-              className="shrink-0"
+              className="-mt-12 shrink-0 sm:-mt-14"
             />
 
-            <div className="min-w-0 flex-1 sm:pb-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
+            <div className="min-w-0 flex-1 pb-0.5">
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                <h1 className="font-display text-xl font-extrabold leading-tight tracking-tight sm:text-3xl">
                   {profile.display_name || profile.username}
                 </h1>
                 <LevelBadge level={profile.level} showRank size="md" />
                 {profile.role === "admin" && <AdminBadge />}
               </div>
-              <p className="mt-0.5 text-sm text-ink-faint">@{profile.username}</p>
+              <p className="mt-1 truncate text-sm text-ink-faint">@{profile.username}</p>
             </div>
 
             {isOwnProfile && (
               <Link
                 href="/settings"
-                className="btn-ghost inline-flex h-10 shrink-0 items-center gap-2 self-start rounded-xl px-4 text-sm sm:self-auto"
+                className="btn-ghost hidden h-10 shrink-0 items-center gap-2 rounded-xl px-4 text-sm sm:inline-flex"
               >
                 <Settings className="h-4 w-4" />
                 Edit profile
               </Link>
             )}
           </div>
+
+          {/* On phones the edit button drops below rather than squeezing the
+              name into a narrow column. */}
+          {isOwnProfile && (
+            <Link
+              href="/settings"
+              className="btn-ghost mt-4 inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm sm:hidden"
+            >
+              <Settings className="h-4 w-4" />
+              Edit profile
+            </Link>
+          )}
 
           {profile.bio && (
             <p className="mt-4 max-w-2xl whitespace-pre-line text-sm leading-relaxed text-ink-muted">

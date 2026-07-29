@@ -97,7 +97,7 @@ export function ShowcasePicker({
           }}
         >
           {/* Bottom sheet on phones, centred dialog on desktop. */}
-          <div className="glass-strong flex max-h-[85dvh] w-full flex-col rounded-t-3xl sm:max-w-lg sm:rounded-3xl">
+          <div className="popover flex max-h-[85dvh] w-full flex-col rounded-t-3xl sm:max-w-lg sm:rounded-3xl">
             <header className="flex items-center justify-between border-b border-white/8 p-5">
               <div>
                 <h2 className="font-display text-lg font-bold">Your showcase</h2>

@@ -1,0 +1,162 @@
+<!--
+  EXPoints — "Confirm your email"
+  Paste into: Supabase Dashboard → Authentication → Emails → Confirm signup
+
+  BUILT FOR EMAIL CLIENTS, NOT BROWSERS
+  ─────────────────────────────────────
+  Outlook 2016+ renders with Microsoft Word, which supports no flexbox, no
+  grid, and no external stylesheets. So:
+    · Tables for layout, never divs
+    · Every style inline
+    · align="center" for Outlook AND margin:0 auto for everyone else
+    · A VML fallback so the button renders as a real button in Outlook
+    · No web fonts, no background images, no semi-transparent PNGs
+      (Outlook's dark-mode auto-inversion mangles all three)
+
+  `color-scheme` + `supported-color-schemes` tell Apple Mail and iOS not to
+  auto-invert a design that is already dark.
+
+  Supabase variables used: {{ .ConfirmationURL }} · {{ .Token }} · {{ .Email }}
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="supported-color-schemes" content="dark" />
+  <title>Confirm your EXPoints account</title>
+  <!--[if mso]>
+  <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+  <![endif]-->
+  <style>
+    /* Only progressive enhancement lives here — nothing load-bearing, because
+       Gmail strips <style> in some contexts and Outlook ignores most of it. */
+    @media only screen and (max-width: 600px) {
+      .sm-full { width: 100% !important; }
+      .sm-pad { padding-left: 24px !important; padding-right: 24px !important; }
+      .sm-title { font-size: 26px !important; line-height: 32px !important; }
+    }
+    a { text-decoration: none; }
+  </style>
+</head>
+
+<body style="margin:0; padding:0; width:100%; background-color:#05091c;">
+  <!-- Preheader: shown in the inbox list preview, hidden in the body. -->
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent; height:0; width:0;">
+    One click and you're in. Your first review is worth 10 EXP.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#05091c;">
+    <tr>
+      <td align="center" style="padding:32px 12px;">
+
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" class="sm-full" style="width:600px; max-width:600px; margin:0 auto;">
+
+          <!-- Wordmark -->
+          <tr>
+            <td align="center" style="padding-bottom:24px; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+              <span style="font-size:26px; font-weight:800; letter-spacing:-0.5px; color:#6cc2ff;">✦ EXP</span><span style="font-size:17px; font-weight:700; letter-spacing:2px; color:#a3d8ff;">OINTS</span>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background-color:#0b1330; border:1px solid #1b3a75; border-radius:16px;">
+
+              <!-- Accent rule. A solid cell, not a gradient: Outlook drops
+                   gradients and would leave a gap here. -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td style="height:4px; background-color:#38a0ff; border-radius:16px 16px 0 0; font-size:0; line-height:0;">&nbsp;</td></tr>
+              </table>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="sm-pad" style="padding:40px 44px 36px 44px; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+                    <h1 class="sm-title" style="margin:0 0 14px 0; font-size:30px; line-height:36px; font-weight:800; color:#f2f7ff; letter-spacing:-0.4px;">
+                      You're one click from Level&nbsp;1
+                    </h1>
+
+                    <p style="margin:0 0 28px 0; font-size:15px; line-height:24px; color:#9fb4dd;">
+                      Confirm <strong style="color:#cfeaff; font-weight:600;">{{ .Email }}</strong> and your EXPoints account goes live. Post a review, collect stars, climb the ranks.
+                    </p>
+
+                    <!-- Bulletproof button: VML for Outlook, padded anchor everywhere else. -->
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 28px auto;">
+                      <tr>
+                        <td align="center" bgcolor="#38a0ff" style="border-radius:10px;">
+                          <!--[if mso]>
+                          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ .ConfirmationURL }}" style="height:48px;v-text-anchor:middle;width:260px;" arcsize="21%" stroke="f" fillcolor="#38a0ff">
+                            <w:anchorlock/>
+                            <center style="color:#04121f;font-family:'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:bold;">CONFIRM MY EMAIL</center>
+                          </v:roundrect>
+                          <![endif]-->
+                          <!--[if !mso]><!-- -->
+                          <a href="{{ .ConfirmationURL }}"
+                             style="display:inline-block; padding:15px 40px; font-size:15px; font-weight:700; letter-spacing:0.5px; color:#04121f; background-color:#38a0ff; border-radius:10px; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                            CONFIRM MY EMAIL
+                          </a>
+                          <!--<![endif]-->
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- EXP primer -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a1a3d; border:1px solid #1b3a75; border-radius:12px;">
+                      <tr>
+                        <td style="padding:18px 22px; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                          <p style="margin:0 0 12px 0; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#6cc2ff;">
+                            How EXP works
+                          </p>
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td style="padding:4px 0; font-size:14px; color:#9fb4dd;">Publish a review</td>
+                              <td align="right" style="padding:4px 0; font-size:14px; font-weight:700; color:#fbbf24;">+10 EXP</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:4px 0; font-size:14px; color:#9fb4dd;">Leave a comment</td>
+                              <td align="right" style="padding:4px 0; font-size:14px; font-weight:700; color:#fbbf24;">+5 EXP</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:4px 0; font-size:14px; color:#9fb4dd;">Someone stars your review</td>
+                              <td align="right" style="padding:4px 0; font-size:14px; font-weight:700; color:#fbbf24;">+15 EXP</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- OTP fallback for clients that mangle long links. -->
+                    <p style="margin:26px 0 0 0; font-size:13px; line-height:21px; color:#6b82ad;">
+                      Button not working? Enter this code instead:
+                    </p>
+                    <p style="margin:8px 0 0 0; font-size:26px; font-weight:700; letter-spacing:7px; color:#cfeaff; font-family:Consolas,Monaco,'Courier New',monospace;">
+                      {{ .Token }}
+                    </p>
+
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:26px 24px 0 24px; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;" align="center">
+              <p style="margin:0 0 6px 0; font-size:12px; line-height:19px; color:#6b82ad;">
+                Didn't sign up for EXPoints? Ignore this email — no account is created without confirming.
+              </p>
+              <p style="margin:0; font-size:12px; color:#4d5f80;">
+                EXPoints · Game reviews worth levelling up for
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,14 +1,27 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
+import { useTransition } from "react";
 import { Bookmark } from "lucide-react";
 import { toggleBookmark } from "@/lib/actions";
 import { useToast } from "@/components/ui/Toast";
+import { useGuestPrompt } from "@/components/auth/GuestPrompt";
+import {
+  interactionKey,
+  setBookmarkOverride,
+  useBookmarkOverride,
+} from "@/components/post/interaction-store";
 import { cn } from "@/lib/utils";
 
+/**
+ * Save-for-later toggle.
+ *
+ * Same fix as StarButton: state comes from the interaction store first and the
+ * server snapshot second, so the icon stays filled once the action resolves.
+ * See interaction-store.ts for the full diagnosis.
+ */
 export function BookmarkButton({
   postId,
-  bookmarked,
+  bookmarked: serverBookmarked,
   canInteract,
   className,
 }: {
@@ -18,21 +31,33 @@ export function BookmarkButton({
   className?: string;
 }) {
   const { push } = useToast();
-  const [, startTransition] = useTransition();
-  const [saved, setSaved] = useOptimistic(bookmarked, (_p, next: boolean) => next);
+  const { prompt } = useGuestPrompt();
+  const [pending, startTransition] = useTransition();
+
+  const key = interactionKey("post", postId);
+  const override = useBookmarkOverride(key);
+  const saved = override ?? serverBookmarked;
 
   const handleClick = () => {
+    // Guests get the signup modal; nothing is written and nothing flips.
     if (!canInteract) {
-      push("Sign in to save reviews.", "info");
+      prompt("bookmark");
       return;
     }
 
     const next = !saved;
+    const rollback = override ?? null;
+
+    setBookmarkOverride(key, next);
+
     startTransition(async () => {
-      setSaved(next);
       const result = await toggleBookmark(postId, next);
-      if (!result.ok) push(result.error, "error");
-      else push(next ? "Saved to your bookmarks." : "Removed from bookmarks.", "success");
+      if (!result.ok) {
+        setBookmarkOverride(key, rollback);
+        push(result.error, "error");
+      } else {
+        push(next ? "Saved to your bookmarks." : "Removed from bookmarks.", "success");
+      }
     });
   };
 
@@ -41,6 +66,7 @@ export function BookmarkButton({
       type="button"
       onClick={handleClick}
       aria-pressed={saved}
+      aria-busy={pending}
       aria-label={saved ? "Remove bookmark" : "Save for later"}
       className={cn(
         "grid h-8 w-8 place-items-center rounded-lg border transition-all",

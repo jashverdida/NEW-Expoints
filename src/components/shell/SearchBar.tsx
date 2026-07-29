@@ -96,7 +96,7 @@ export function SearchBar({ className }: { className?: string }) {
           {menuOpen && (
             <div
               role="listbox"
-              className="glass-strong absolute right-0 top-full z-50 mt-2 w-36 overflow-hidden rounded-xl p-1"
+              className="popover absolute right-0 top-full z-50 mt-2 w-36 overflow-hidden rounded-xl p-1"
             >
               {FIELDS.map((f) => (
                 <button

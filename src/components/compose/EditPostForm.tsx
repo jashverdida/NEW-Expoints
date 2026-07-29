@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2, Save, Trash2 } from "lucide-react";
 import { deletePost, updatePost } from "@/lib/actions";
+import { ImageDropzone } from "@/components/compose/ImageDropzone";
 import { useToast } from "@/components/ui/Toast";
 import type { ActionResult, FeedPostWithViewer } from "@/lib/types";
 import { ratingVerdict } from "@/lib/utils";
@@ -151,6 +152,8 @@ export function EditPostForm({ post }: { post: FeedPostWithViewer }) {
             className="field resize-y leading-relaxed"
           />
         </label>
+
+        <ImageDropzone userId={post.author_id} defaultValue={post.image_url} />
 
         <div className="flex justify-end border-t border-white/8 pt-5">
           <Submit />

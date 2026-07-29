@@ -26,6 +26,35 @@ async function requireActiveUser(): Promise<Guard> {
   return { ok: true, profile };
 }
 
+/**
+ * Validates an attachment URL before it's stored.
+ *
+ * The field arrives from a hidden input, so a crafted request could put any
+ * string in it. Only URLs inside our own Supabase storage bucket are accepted —
+ * otherwise a post could embed a remote image used to track readers' IPs, or
+ * point at something we can't moderate or take down.
+ *
+ * Returns the URL, null when empty, or false when it should be rejected.
+ */
+function sanitiseImageUrl(raw: string): string | null | false {
+  const value = raw.trim();
+  if (!value) return null;
+
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!base) return false;
+
+  try {
+    const url = new URL(value);
+    const expected = new URL(base);
+    if (url.protocol !== "https:") return false;
+    if (url.hostname !== expected.hostname) return false;
+    if (!url.pathname.startsWith("/storage/v1/object/public/post-images/")) return false;
+    return url.toString();
+  } catch {
+    return false;
+  }
+}
+
 async function requireAdmin(): Promise<Guard> {
   const profile = await getCurrentProfile();
   if (!profile) return { ok: false, error: "You need to be signed in to do that." };
@@ -70,20 +99,31 @@ export async function signUp(
   const username = String(formData.get("username") ?? "").trim();
   const displayName = String(formData.get("display_name") ?? "").trim();
 
+  // Each failure names the offending input so the form can clear and focus
+  // just that one, instead of the user losing everything they typed.
   if (!email || !password || !username) {
-    return { ok: false, error: "Username, email and password are required." };
+    return {
+      ok: false,
+      error: "Username, email and password are required.",
+      field: !username ? "username" : !email ? "email" : "password",
+    };
   }
   if (!/^[A-Za-z0-9_]{3,24}$/.test(username)) {
     return {
       ok: false,
       error: "Usernames are 3–24 characters: letters, numbers and underscores only.",
+      field: "username",
     };
   }
   if (password.length < 8) {
-    return { ok: false, error: "Use at least 8 characters for your password." };
+    return {
+      ok: false,
+      error: "Use at least 8 characters for your password.",
+      field: "password",
+    };
   }
   if (password !== confirm) {
-    return { ok: false, error: "Those passwords don't match." };
+    return { ok: false, error: "Those passwords don't match.", field: "confirm" };
   }
 
   const supabase = await createClient();
@@ -96,7 +136,9 @@ export async function signUp(
     .ilike("username", username)
     .maybeSingle();
 
-  if (taken) return { ok: false, error: `@${username} is already taken.` };
+  if (taken) {
+    return { ok: false, error: `@${username} is already taken.`, field: "username" };
+  }
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -175,6 +217,11 @@ export async function createPost(
     return { ok: false, error: "Score must be between 1 and 10." };
   }
 
+  const imageUrl = sanitiseImageUrl(String(formData.get("image_url") ?? ""));
+  if (imageUrl === false) {
+    return { ok: false, error: "That image couldn't be attached. Try uploading it again." };
+  }
+
   const supabase = await createClient();
 
   // Find-or-create the game so users aren't limited to a fixed dropdown.
@@ -191,6 +238,7 @@ export async function createPost(
       title: title.slice(0, 160),
       content,
       rating,
+      image_url: imageUrl,
     })
     .select("id")
     .single();
@@ -218,11 +266,23 @@ export async function updatePost(
   if (title.length < 3) return { ok: false, error: "Title is too short." };
   if (content.length < 10) return { ok: false, error: "Review is too short." };
 
+  const imageUrl = sanitiseImageUrl(String(formData.get("image_url") ?? ""));
+  if (imageUrl === false) {
+    return { ok: false, error: "That image couldn't be attached. Try uploading it again." };
+  }
+
   const supabase = await createClient();
   // RLS restricts this to the author; the extra eq() makes the intent explicit.
+  // Swapping or adding an image here re-triggers admin review — see
+  // notify_admins_of_post_image().
   const { error } = await supabase
     .from("posts")
-    .update({ title: title.slice(0, 160), content, rating: ratingRaw ? Number(ratingRaw) : null })
+    .update({
+      title: title.slice(0, 160),
+      content,
+      rating: ratingRaw ? Number(ratingRaw) : null,
+      image_url: imageUrl,
+    })
     .eq("id", id)
     .eq("author_id", guard.profile.id);
 
@@ -284,7 +344,20 @@ export async function togglePostStar(
     if (error) return { ok: false, error: error.message };
   }
 
+  /*
+   * Revalidate every surface that renders this post's star state, not just the
+   * detail page. Previously only `/post/[id]` was revalidated, so starring from
+   * the feed refreshed nothing the user was actually looking at — one of the
+   * causes of the star appearing to un-fill itself.
+   *
+   * The client-side interaction store keeps the current view correct on its
+   * own; this is what makes a later navigation or reload agree with it.
+   */
   revalidatePath(`/post/${postId}`);
+  revalidatePath("/feed");
+  revalidatePath("/popular");
+  revalidatePath("/newest");
+
   return { ok: true, data: { starred } };
 }
 
@@ -337,7 +410,12 @@ export async function toggleBookmark(
     if (error) return { ok: false, error: error.message };
   }
 
+  // Same reasoning as togglePostStar: refresh every surface showing this post,
+  // so a later navigation agrees with what the interaction store is showing now.
   revalidatePath("/bookmarks");
+  revalidatePath(`/post/${postId}`);
+  revalidatePath("/feed");
+
   return { ok: true, data: { bookmarked } };
 }
 

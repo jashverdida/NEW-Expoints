@@ -1,10 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { motion } from "framer-motion";
 import { AlertCircle, Eye, EyeOff, Loader2, MailCheck } from "lucide-react";
-import { useState } from "react";
 import { signIn, signUp } from "@/lib/actions";
 import type { ActionResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -29,9 +28,19 @@ function SubmitButton({ label }: { label: string }) {
   );
 }
 
+/**
+ * Controlled text field.
+ *
+ * Controlled on purpose. React resets an uncontrolled `<form action={fn}>`
+ * after the action finishes — which is why a single username complaint used to
+ * wipe the email, display name and both passwords. Holding the values in React
+ * state means only what we explicitly clear gets cleared.
+ */
 function Field({
   label,
   name,
+  value,
+  onChange,
   type = "text",
   placeholder,
   required = true,
@@ -39,9 +48,12 @@ function Field({
   hint,
   prefix,
   maxLength,
+  invalid = false,
 }: {
   label: string;
   name: string;
+  value: string;
+  onChange: (next: string) => void;
   type?: string;
   placeholder?: string;
   required?: boolean;
@@ -49,6 +61,7 @@ function Field({
   hint?: string;
   prefix?: string;
   maxLength?: number;
+  invalid?: boolean;
 }) {
   const [reveal, setReveal] = useState(false);
   const isPassword = type === "password";
@@ -66,12 +79,20 @@ function Field({
         )}
         <input
           name={name}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
           type={isPassword && reveal ? "text" : type}
           placeholder={placeholder}
           required={required}
           autoComplete={autoComplete}
           maxLength={maxLength}
-          className={cn("field", prefix && "pl-8", isPassword && "pr-11")}
+          aria-invalid={invalid || undefined}
+          className={cn(
+            "field",
+            prefix && "pl-8",
+            isPassword && "pr-11",
+            invalid && "!border-danger/70 focus:!border-danger",
+          )}
         />
         {isPassword && (
           <button
@@ -103,8 +124,47 @@ function ErrorBanner({ message }: { message: string }) {
   );
 }
 
+/**
+ * Clears and focuses the field the server flagged, leaving everything else
+ * intact. Runs once per distinct result — the ref guard stops it re-firing on
+ * unrelated re-renders and stealing focus while the user is typing.
+ */
+function useFieldError(
+  state: ActionResult | null,
+  clear: (field: string) => void,
+) {
+  const handled = useRef<ActionResult | null>(null);
+
+  useEffect(() => {
+    if (!state || state.ok || handled.current === state) return;
+    handled.current = state;
+
+    const field = state.field;
+    if (!field) return;
+
+    clear(field);
+    // Let the state flush before moving focus, or React re-renders over it.
+    requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLInputElement>(`input[name="${field}"]`);
+      el?.focus();
+    });
+    // `clear` is recreated each render; keying on state alone is intentional.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+}
+
 export function LoginForm({ next }: { next: string }) {
   const [state, action] = useActionState<ActionResult | null, FormData>(signIn, null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Wrong credentials: keep the email, clear only the password.
+  const handled = useRef<ActionResult | null>(null);
+  useEffect(() => {
+    if (!state || state.ok || handled.current === state) return;
+    handled.current = state;
+    setPassword("");
+  }, [state]);
 
   return (
     <form action={action} className="space-y-4">
@@ -116,6 +176,8 @@ export function LoginForm({ next }: { next: string }) {
         label="Email"
         name="email"
         type="email"
+        value={email}
+        onChange={setEmail}
         placeholder="you@example.com"
         autoComplete="email"
       />
@@ -123,6 +185,8 @@ export function LoginForm({ next }: { next: string }) {
         label="Password"
         name="password"
         type="password"
+        value={password}
+        onChange={setPassword}
         placeholder="Your password"
         autoComplete="current-password"
       />
@@ -132,8 +196,32 @@ export function LoginForm({ next }: { next: string }) {
   );
 }
 
+const EMPTY_REGISTER = {
+  username: "",
+  display_name: "",
+  email: "",
+  password: "",
+  confirm: "",
+};
+
 export function RegisterForm() {
   const [state, action] = useActionState<ActionResult | null, FormData>(signUp, null);
+  const [values, setValues] = useState(EMPTY_REGISTER);
+
+  const set = (key: keyof typeof EMPTY_REGISTER) => (next: string) =>
+    setValues((v) => ({ ...v, [key]: next }));
+
+  useFieldError(state, (field) => {
+    setValues((v) => ({
+      ...v,
+      [field]: "",
+      // A rejected password invalidates the confirmation too — leaving a stale
+      // copy behind would just fail the match check on the next submit.
+      ...(field === "password" ? { confirm: "" } : {}),
+    }));
+  });
+
+  const invalidField = state && !state.ok ? state.field : undefined;
 
   /*
    * A successful signup either redirects (session created immediately) or comes
@@ -160,6 +248,9 @@ export function RegisterForm() {
       <Field
         label="Username"
         name="username"
+        value={values.username}
+        onChange={set("username")}
+        invalid={invalidField === "username"}
         placeholder="ShadowSlayer"
         prefix="@"
         autoComplete="username"
@@ -169,6 +260,8 @@ export function RegisterForm() {
       <Field
         label="Display name"
         name="display_name"
+        value={values.display_name}
+        onChange={set("display_name")}
         placeholder="What people should call you"
         required={false}
         autoComplete="name"
@@ -178,6 +271,9 @@ export function RegisterForm() {
         label="Email"
         name="email"
         type="email"
+        value={values.email}
+        onChange={set("email")}
+        invalid={invalidField === "email"}
         placeholder="you@example.com"
         autoComplete="email"
       />
@@ -185,6 +281,9 @@ export function RegisterForm() {
         label="Password"
         name="password"
         type="password"
+        value={values.password}
+        onChange={set("password")}
+        invalid={invalidField === "password"}
         placeholder="At least 8 characters"
         autoComplete="new-password"
       />
@@ -192,6 +291,9 @@ export function RegisterForm() {
         label="Confirm password"
         name="confirm"
         type="password"
+        value={values.confirm}
+        onChange={set("confirm")}
+        invalid={invalidField === "confirm"}
         placeholder="Type it again"
         autoComplete="new-password"
       />

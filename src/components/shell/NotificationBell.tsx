@@ -113,7 +113,7 @@ export function NotificationBell({
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.16 }}
             className={cn(
-              "glass-strong absolute z-50 mt-2 overflow-hidden rounded-2xl",
+              "popover absolute z-50 mt-2 overflow-hidden rounded-2xl",
               // Full-width sheet on phones, anchored dropdown on desktop.
               "right-0 w-[min(92vw,22rem)]",
             )}

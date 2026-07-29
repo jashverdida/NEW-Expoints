@@ -12,23 +12,65 @@ import {
   Sparkles,
   Star,
   TrendingUp,
-  Trophy,
   Zap,
 } from "lucide-react";
 import { BoxArtRail } from "@/components/landing/BoxArtRail";
-import { CountUp } from "@/components/landing/CountUp";
+import { DevCard, type Dev } from "@/components/landing/DevCard";
 import { Marquee } from "@/components/landing/Marquee";
 import { GlyphField } from "@/components/ui/Glyphs";
 import { Logo } from "@/components/ui/Logo";
 import { EXP_REWARDS, RANKS } from "@/lib/exp";
-import { getCurrentProfile, getGames, getSiteStats, getTopPlayers } from "@/lib/queries";
+import { getCurrentProfile, getGames, getTopPlayers } from "@/lib/queries";
 import { Avatar } from "@/components/ui/Avatar";
 import { LevelBadge } from "@/components/ui/LevelBadge";
 import { compactNumber } from "@/lib/utils";
 
 // Rendered per request: it reads the session cookie to swap the CTA between
-// "Sign up" and "Enter forum". The four data queries below run in parallel, so
+// "Sign up" and "Enter forum". The three data queries below run in parallel, so
 // this stays a single round-trip's worth of latency.
+
+/**
+ * The team.
+ *
+ * `focus` names work that visibly exists in this repo, so the roles read as
+ * real rather than as filler. Accent colours are drawn from the site palette
+ * and kept distinct per person.
+ */
+const TEAM: Dev[] = [
+  {
+    name: "Jashmine Verdida",
+    role: "Frontend Engineer & QA",
+    focus:
+      "Built the interface and design system — the EXP bar, rank tiers and themed atmospheres — and tested the whole thing to breaking point.",
+    email: "jashmineverdida08@gmail.com",
+    linkedin: "https://www.linkedin.com/in/jashmine-verdida-820a56352/",
+    photo: "/team/jashmine.webp",
+    accent: "#f43f5e",
+    accentSoft: "#fda4af",
+  },
+  {
+    name: "Eijay P. Pepito",
+    role: "Backend & Database Engineer",
+    focus:
+      "Designed the Postgres schema, the trigger-driven EXP economy and the row-level security that keeps it honest.",
+    email: "eijay.pepito8@gmail.com",
+    linkedin: "https://www.linkedin.com/in/eijay-pepito-98b538355/",
+    photo: "/team/eijay.webp",
+    accent: "#38bdf8",
+    accentSoft: "#a5f3fc",
+  },
+  {
+    name: "Lord Christian Beligaño",
+    role: "AI & Systems Engineer",
+    focus:
+      "Owns the ranking algorithm, search relevance and the moderation tooling that keeps the forum civil.",
+    email: "lordchristian88@gmail.com",
+    linkedin: "https://www.linkedin.com/in/beliga%C3%B1o-lord-christian-64484524a/",
+    photo: "/team/lord.webp",
+    accent: "#a78bfa",
+    accentSoft: "#ddd6fe",
+  },
+];
 
 const FEATURES = [
   {
@@ -64,10 +106,9 @@ const FEATURES = [
 ];
 
 export default async function LandingPage() {
-  // All four run in parallel — the page waits on the slowest, not the sum.
-  const [profile, stats, games, topPlayers] = await Promise.all([
+  // All three run in parallel — the page waits on the slowest, not the sum.
+  const [profile, games, topPlayers] = await Promise.all([
     getCurrentProfile(),
-    getSiteStats(),
     getGames(),
     getTopPlayers(5),
   ]);
@@ -184,24 +225,6 @@ export default async function LandingPage() {
               </Link>
             </div>
 
-            {/* Live stat band — real numbers, not placeholders. */}
-            <dl className="mt-10 grid grid-cols-3 gap-3 sm:max-w-md lg:mx-0">
-              {[
-                { label: "Reviews", value: stats.posts, icon: MessageSquare },
-                { label: "Gamers", value: stats.players, icon: Trophy },
-                { label: "Games", value: stats.games, icon: Gamepad2 },
-              ].map(({ label, value, icon: Icon }) => (
-                <div key={label} className="glass rounded-2xl px-3 py-3.5 text-center">
-                  <Icon className="mx-auto mb-1.5 h-4 w-4 text-brand-300" />
-                  <dd className="stat text-xl font-bold text-ink sm:text-2xl">
-                    <CountUp value={value} />
-                  </dd>
-                  <dt className="mt-0.5 text-[0.65rem] font-semibold uppercase tracking-widest text-ink-faint">
-                    {label}
-                  </dt>
-                </div>
-              ))}
-            </dl>
           </div>
 
           {/* Panda mascot — the piece of EXPoints nobody would recognise it without. */}
@@ -413,26 +436,26 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Devs ────────────────────────────────────────────────────────── */}
-      <section className="relative mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        <div className="glass rounded-[2rem] p-7 text-center sm:p-11">
+      <section id="team" className="relative mx-auto max-w-7xl scroll-mt-20 px-5 py-16 sm:px-8">
+        <GlyphField density="light" className="opacity-50" />
+
+        <div className="relative mx-auto max-w-2xl text-center">
           <h2 className="rule-label justify-center before:hidden after:hidden">Meet the devs</h2>
-          <p className="mt-3 font-display text-2xl font-extrabold sm:text-3xl">
+          <p className="mt-3 font-display text-3xl font-extrabold leading-tight sm:text-4xl">
             <span className="text-gradient">Three people who were tired of bland forums</span>
           </p>
+          <p className="mt-3 text-ink-muted">
+            Built end to end — interface, database and the systems in between.
+          </p>
+        </div>
 
-          <div className="mt-9 grid gap-4 sm:grid-cols-3">
-            {[
-              { name: "Eijay P. Pepito", role: "Design & Front-end" },
-              { name: "Jashmine Verdida", role: "Systems & Database" },
-              { name: "Lord Christian Beligaño", role: "Features & QA" },
-            ].map((dev) => (
-              <div key={dev.name} className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-                <Avatar username={dev.name} level={50} size="lg" className="mx-auto" />
-                <h3 className="mt-3.5 font-display font-bold">{dev.name}</h3>
-                <p className="mt-0.5 text-sm text-ink-muted">{dev.role}</p>
-              </div>
-            ))}
-          </div>
+        {/* gap-y is generous because each card's portrait overhangs upward by
+            7rem — a tight gap would let one card's head collide with the card
+            above it once the grid wraps to two columns. */}
+        <div className="relative grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+          {TEAM.map((dev) => (
+            <DevCard key={dev.name} dev={dev} />
+          ))}
         </div>
       </section>
 

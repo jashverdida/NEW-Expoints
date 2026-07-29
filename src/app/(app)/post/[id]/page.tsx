@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { after } from "next/server";
@@ -10,6 +11,7 @@ import { BookmarkButton } from "@/components/post/BookmarkButton";
 import { RatingBadge } from "@/components/post/RatingBadge";
 import { CommentForm } from "@/components/comments/CommentForm";
 import { CommentThread } from "@/components/comments/CommentThread";
+import { GuestCommentBar } from "@/components/auth/GuestPrompt";
 import { PostCard } from "@/components/post/PostCard";
 import { createClient } from "@/lib/supabase/server";
 import { getComments, getCurrentProfile, getFeed, getPost } from "@/lib/queries";
@@ -143,6 +145,25 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           {post.content}
         </div>
 
+        {/*
+          Full attachment. Unlike the feed card this isn't cropped to a fixed
+          ratio — width/height come from the intrinsic size so a tall
+          screenshot stays readable. Capped at 70vh so a very tall image can't
+          push the comments off the screen entirely.
+        */}
+        {post.image_url && (
+          <figure className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-abyss/40">
+            <Image
+              src={post.image_url}
+              alt={`Image attached to ${post.title}`}
+              width={1600}
+              height={900}
+              sizes="(max-width: 768px) 100vw, 48rem"
+              className="max-h-[70vh] w-full object-contain"
+            />
+          </figure>
+        )}
+
         {/* ── Actions ── */}
         <footer className="mt-7 flex flex-wrap items-center gap-2 border-t border-white/8 pt-5">
           <StarButton
@@ -182,12 +203,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
               <CommentForm postId={post.id} profile={viewer} />
             </div>
           ) : (
-            <p className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-center text-sm text-ink-muted">
-              <Link href="/login" className="font-semibold text-brand-300 hover:text-brand-200">
-                Log in
-              </Link>{" "}
-              to join the discussion.
-            </p>
+            <GuestCommentBar />
           )}
 
           <CommentThread comments={comments} postId={post.id} viewer={viewer} />

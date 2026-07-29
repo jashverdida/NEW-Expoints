@@ -267,6 +267,29 @@ body::after {
     transform: translateY(-1px);
   }
 
+  /*
+   * Floating panel surface — dropdowns, menus, popovers.
+   *
+   * Still translucent: light and colour from behind come through, so it reads
+   * as glass rather than a flat card. What makes it legible is the BLUR, not
+   * opacity — 40px diffuses whatever is behind into soft colour, so nothing
+   * back there stays legible enough to compete with the panel's own text.
+   *
+   * That's the balance these panels need: .glass-strong (~55% alpha, 24px
+   * blur) let the nav and post cards read straight through, which is the
+   * clutter that was reported. Going fully opaque fixed the clutter but threw
+   * away the glass entirely. ~86% alpha with a much heavier blur keeps both.
+   */
+  .popover {
+    background: linear-gradient(165deg, rgba(19, 40, 100, 0.86), rgba(7, 13, 33, 0.9));
+    backdrop-filter: blur(40px) saturate(170%);
+    -webkit-backdrop-filter: blur(40px) saturate(170%);
+    border: 1px solid color-mix(in oklab, var(--color-brand-300) 22%, transparent);
+    box-shadow:
+      0 1px 0 0 color-mix(in oklab, #fff 10%, transparent) inset,
+      0 26px 64px -20px rgba(0, 0, 0, 0.9);
+  }
+
   /* Text input. Focus lights the border and drops a soft outer glow. */
   .field {
     width: 100%;
@@ -555,6 +578,18 @@ body::after {
 
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Dev-card geometry. Two rings turning opposite ways reads as deliberate
+   motion rather than one spinning element. */
+@keyframes dev-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dev-spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
 }
 
 /* Page-hero sheen sweeping left to right across the banner. */

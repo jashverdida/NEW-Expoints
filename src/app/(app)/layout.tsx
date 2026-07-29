@@ -1,76 +1,56 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
-import { TopNav } from "@/components/shell/TopNav";
-import { GuestNav } from "@/components/shell/GuestNav";
-import { MobileTabBar } from "@/components/shell/MobileTabBar";
-import { SideRailNav } from "@/components/shell/SideRailNav";
+import { AppNav, AppNavSkeleton } from "@/components/shell/AppNav";
 import { AmbientGlyphs } from "@/components/ui/Glyphs";
 import { NavProgress } from "@/components/ui/NavProgress";
 import { ToastProvider } from "@/components/ui/Toast";
-import { getCurrentProfile, getNotifications, getUnreadCount } from "@/lib/queries";
+import { GuestPromptProvider } from "@/components/auth/GuestPrompt";
 
 /**
  * Shell for the main app.
  *
+ * DELIBERATELY SYNCHRONOUS. This function must not await anything.
+ *
+ * `loading.tsx` creates a Suspense boundary around a layout's children — the
+ * layout itself always has to resolve first. When this was async and awaited
+ * the profile and notification queries, navigating here rendered nothing at
+ * all until they returned, so the browser sat on the previous page and the
+ * page-level loading states never appeared.
+ *
+ * All fetching now lives in <AppNav>, which streams in behind a skeleton while
+ * the page's own loading.tsx renders alongside it.
+ *
  * Routes in this group split into two kinds:
- *
  *  - Private (/feed, /me, /compose, /settings, /bookmarks, /notifications,
- *    /admin, /report) — middleware redirects anonymous users at the edge before
- *    this ever renders.
- *  - Publicly readable (/post/[id], /u/[username], /games, /leaderboard) — they
- *    render for everyone, because those are the pages search engines index.
- *
- * So a missing profile here is not an error: it means a guest is reading a
- * public page, and they get the guest nav instead of a redirect.
+ *    /admin, /report) — middleware redirects anonymous users at the edge.
+ *  - Publicly readable (/post/[id], /u/[username], /games, /leaderboard) —
+ *    these render for everyone, because they're what search engines index.
+ *    AppNav shows the guest nav for those.
  */
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const profile = await getCurrentProfile();
-
-  if (profile?.is_banned) redirect("/banned");
-
-  if (!profile) {
-    return (
-      <ToastProvider>
-        <AmbientGlyphs />
-        <div className="grain-overlay" aria-hidden="true" />
-        <div className="relative z-10 flex min-h-dvh flex-col">
-          <GuestNav />
-          <main className="flex-1 pb-10">{children}</main>
-        </div>
-      </ToastProvider>
-    );
-  }
-
-  const [unreadCount, notifications] = await Promise.all([
-    getUnreadCount(profile.id),
-    getNotifications(profile.id, 12),
-  ]);
-
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <ToastProvider>
+      <GuestPromptProvider>
       {/* Slim top-edge loading bar; real byte progress on data fetches. */}
       <Suspense fallback={null}>
         <NavProgress />
       </Suspense>
 
-      {/* Motif and texture behind every signed-in page, at low density so they
-          never compete with the content. */}
+      {/* Motif and texture behind every page, at low density so they never
+          compete with the content. */}
       <AmbientGlyphs />
       <div className="grain-overlay" aria-hidden="true" />
 
       {/* z-10 keeps content above the fixed atmosphere layer at z-0. */}
       <div className="relative z-10 flex min-h-dvh flex-col">
-        <TopNav profile={profile} unreadCount={unreadCount} notifications={notifications} />
-
-        {/* The original's slide-in edge rail, desktop only. */}
-        <SideRailNav />
+        <Suspense fallback={<AppNavSkeleton />}>
+          <AppNav />
+        </Suspense>
 
         {/* Bottom padding clears the mobile tab bar so content is never hidden
             behind it; removed once the tab bar disappears at lg. */}
         <main className="flex-1 pb-24 lg:pb-10">{children}</main>
-
-        <MobileTabBar />
       </div>
+      </GuestPromptProvider>
     </ToastProvider>
   );
 }

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Lightbulb } from "lucide-react";
 import { Composer } from "@/components/compose/Composer";
-import { getGames } from "@/lib/queries";
+import { redirect } from "next/navigation";
+import { getCurrentProfile, getGames } from "@/lib/queries";
 
 export const metadata: Metadata = {
   title: "Write a review",
@@ -17,7 +18,10 @@ const TIPS = [
 ];
 
 export default async function ComposePage() {
-  const games = await getGames();
+  // The uploader's id is needed client-side: storage policy requires files to
+  // be written under a folder matching auth.uid().
+  const [games, profile] = await Promise.all([getGames(), getCurrentProfile()]);
+  if (!profile) redirect("/login");
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
@@ -38,7 +42,7 @@ export default async function ComposePage() {
         </p>
       </header>
 
-      <Composer games={games} />
+      <Composer games={games} userId={profile.id} />
 
       <aside className="glass mt-5 rounded-3xl p-5">
         <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-bold uppercase tracking-widest text-ink-muted">

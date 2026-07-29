@@ -4,6 +4,8 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { PostCard } from "@/components/post/PostCard";
 import { EmptyState } from "@/components/feed/EmptyState";
 import { ToastProvider } from "@/components/ui/Toast";
+import { Atmosphere } from "@/components/ui/Atmosphere";
+import { GuestPromptProvider } from "@/components/auth/GuestPrompt";
 import { Logo } from "@/components/ui/Logo";
 import { getCurrentProfile, getFeed } from "@/lib/queries";
 import type { FeedSort } from "@/lib/types";
@@ -24,9 +26,9 @@ const SORTS: { value: FeedSort; label: string }[] = [
 /**
  * The read-only front door for logged-out visitors.
  *
- * Everything renders; interactions prompt for sign-in via the toast rather than
- * silently failing. This is deliberately a separate route from /feed so it can
- * be statically revalidated and indexed.
+ * Every review renders in full, but starring, saving and commenting all open
+ * the signup modal instead of doing anything — see GuestPrompt. Deliberately a
+ * separate route from /feed so it can be indexed by search engines.
  */
 export default async function DiscoverPage({
   searchParams,
@@ -45,7 +47,17 @@ export default async function DiscoverPage({
 
   return (
     <ToastProvider>
-      <div className="min-h-dvh">
+      <GuestPromptProvider>
+      {/*
+        /discover lives outside the (app) route group, so it never inherited
+        the shell's background layers — which is why it rendered flat while the
+        signed-in feed had the drifting glyphs. Same treatment applied here so
+        guests see the real product, not a stripped-down version of it.
+      */}
+      <Atmosphere theme="glyphs" />
+      <div className="grain-overlay" aria-hidden="true" />
+
+      <div className="relative z-10 min-h-dvh">
         <header className="sticky top-0 z-40 border-b border-white/8 bg-abyss/75 backdrop-blur-xl">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
             <Link href="/" aria-label="EXPoints home">
@@ -127,6 +139,7 @@ export default async function DiscoverPage({
           )}
         </main>
       </div>
+      </GuestPromptProvider>
     </ToastProvider>
   );
 }

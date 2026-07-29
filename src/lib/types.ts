@@ -58,6 +58,8 @@ export interface FeedPost {
   title: string;
   content: string;
   rating: number | null;
+  /** Optional attachment, stored in the `post-images` bucket. */
+  image_url: string | null;
   star_count: number;
   comment_count: number;
   view_count: number;
@@ -146,9 +148,14 @@ export interface ModerationLogEntry {
   created_at: string;
 }
 
-/** Result contract shared by every server action, so forms handle one shape. */
+/**
+ * Result contract shared by every server action, so forms handle one shape.
+ *
+ * `field` names the input that caused a validation failure. Forms use it to
+ * clear and focus just that input instead of wiping everything the user typed.
+ */
 export type ActionResult<T = undefined> =
   | { ok: true; data?: T; message?: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; field?: string };
 
 export type FeedSort = "hot" | "new" | "top";
