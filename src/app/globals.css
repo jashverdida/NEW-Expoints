@@ -1438,16 +1438,15 @@ body::after {
 .manual-page p b,
 .manual-page li b { color: var(--color-ink); font-weight: 700; }
 
-/* ── Cover and back ── */
+/* ── The two boards: front cover and back cover ──
+   These classes go on the FACE itself, not on a div inside it. That distinction
+   is the whole reason the cover used to collapse into a strip at the top of the
+   page: an inner div has no height of its own, so `justify-content:center` had
+   nothing to centre within. The face is `position:absolute; inset:0`, so
+   putting the treatment there gives it the full leaf — and lets it override the
+   face's own border colour, which an inner div could never reach. */
 .manual-cover,
-.manual-endpage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 0.45rem;
-  padding: clamp(1.2rem, 3vw, 2rem);
+.manual-endface {
   background: linear-gradient(
     145deg,
     color-mix(in oklab, var(--color-royal) 45%, var(--color-void)),
@@ -1455,7 +1454,47 @@ body::after {
   );
   border-color: color-mix(in oklab, var(--color-brand-400) 34%, transparent);
 }
-.manual-endpage { align-items: flex-start; text-align: left; justify-content: center; gap: 1rem; }
+
+/* A debossed inner frame. It's the detail that makes these read as boards
+   rather than as more pages — real covers have one stamped into them. */
+.manual-cover::after,
+.manual-endface::after {
+  content: "";
+  position: absolute;
+  inset: 0.55rem;
+  border: 1px solid color-mix(in oklab, var(--color-brand-400) 15%, transparent);
+  border-radius: 9px;
+  pointer-events: none;
+}
+
+.manual-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.4rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
+}
+
+/* The sign-off is a normal page underneath, so it inherits the heading rule and
+   the body type — it just recentres, because three blocks under space-evenly
+   get stranded against the edges. */
+.manual-endpage {
+  justify-content: center;
+  gap: 1.1rem;
+}
+.m-endrule {
+  width: 100%;
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--color-brand-400) 45%, transparent),
+    transparent
+  );
+}
 .m-eyebrow {
   font-family: var(--font-mono);
   font-size: clamp(0.58rem, 1.3vw, 0.7rem);
@@ -1473,11 +1512,20 @@ body::after {
 .m-wordmark span { color: var(--color-brand-300); }
 .m-dots { display: flex; gap: 0.45rem; margin-top: 0.2rem; }
 .m-dots i { width: 0.55rem; height: 0.55rem; border-radius: 999px; display: block; }
+/* Sits well below the wordmark block rather than tucked under it — on the
+   reference cover this line reads as a footnote on the board, not part of the
+   title lockup. */
 .m-hint {
   font-family: var(--font-mono);
   font-size: clamp(0.56rem, 1.25vw, 0.68rem);
   color: var(--color-ink-faint);
-  margin-top: 0.5rem;
+  margin-top: clamp(1.4rem, 4vw, 2.6rem);
+}
+.m-cover-sub {
+  font-size: clamp(0.72rem, 1.6vw, 0.88rem);
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+  margin: 0.15rem 0 0.25rem;
 }
 .m-credit {
   font-family: var(--font-mono);

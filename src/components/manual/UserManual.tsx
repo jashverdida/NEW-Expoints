@@ -193,8 +193,8 @@ function ManualOverlay({ onClose, t }: { onClose: () => void; t: Translate }) {
                 zIndex: i === turning ? 50 : i < state ? i + 1 : sheets.length - i,
               }}
             >
-              <div className="sheet-face sheet-front">{sheet.front}</div>
-              <div className="sheet-face sheet-back">{sheet.back}</div>
+              <div className={cn("sheet-face sheet-front", sheet.frontClass)}>{sheet.front}</div>
+              <div className={cn("sheet-face sheet-back", sheet.backClass)}>{sheet.back}</div>
             </div>
           ))}
         </div>
@@ -231,13 +231,21 @@ function ManualOverlay({ onClose, t }: { onClose: () => void; t: Translate }) {
    the sign-off.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-function buildSheets(t: Translate) {
+interface Leaf {
+  front: React.ReactNode;
+  back: React.ReactNode;
+  /** Put on the face itself — see .manual-cover in globals.css for why. */
+  frontClass?: string;
+  backClass?: string;
+}
+
+function buildSheets(t: Translate): Leaf[] {
   return [
-    { front: <Cover />, back: <PageWhatIsIt /> },
+    { front: <Cover />, frontClass: "manual-cover", back: <PageWhatIsIt /> },
     { front: <PageScreens t={t} />, back: <PageGames t={t} /> },
     { front: <PageWrite />, back: <PageReact /> },
     { front: <PageDashboard />, back: <PageSettings /> },
-    { front: <PageTips />, back: <EndPage /> },
+    { front: <PageTips />, back: <EndPage />, backClass: "manual-endface" },
   ];
 }
 
@@ -253,25 +261,31 @@ function Folio({ n }: { n: number }) {
   );
 }
 
+/**
+ * The front board. Rendered as the face's direct children — the `manual-cover`
+ * class lives on the face itself, so there is no wrapper here to collapse.
+ */
 function Cover() {
   return (
-    <div className="manual-cover">
+    <>
       <span className="m-eyebrow">User manual</span>
       <span className="m-wordmark">
         EXP<span>oints</span>
       </span>
-      <p style={{ color: "var(--color-ink-muted)", fontSize: "clamp(.72rem,1.6vw,.88rem)" }}>
+      <p className="m-cover-sub">
         Play it. Review it. Climb the ranks.
         <br />
         Here&apos;s where everything lives.
       </p>
+      {/* One dot per screen, in that screen's own colour — a quiet preview of
+          the palette the book is about to explain. */}
       <span className="m-dots">
         {Object.values(SCREEN_COLORS).map((c) => (
           <i key={c} style={{ background: c }} />
         ))}
       </span>
       <span className="m-hint">Click the page (or press Next) to open →</span>
-    </div>
+    </>
   );
 }
 
@@ -563,16 +577,22 @@ function PageTips() {
   );
 }
 
+/**
+ * The back board. A `manual-page` underneath, so it inherits the heading rule
+ * and the body type every other page uses — the sign-off shouldn't look like it
+ * came from a different book.
+ */
 function EndPage() {
   return (
-    <div className="manual-endpage">
-      <h3 style={{ margin: 0 }}>
+    <div className="manual-page manual-endpage">
+      <h3>
         That&apos;s the <span>whole book</span>
       </h3>
-      <p style={{ color: "var(--color-ink-muted)", fontSize: "clamp(.74rem,1.6vw,.88rem)", lineHeight: 1.55 }}>
+      <p>
         Close it and go read something. If you get lost, the manual is always in the header — and
         every screen tells you where you are by the colour it wears.
       </p>
+      <hr className="m-endrule" />
       <span className="m-credit">
         Made by Team VERPTO
         <br />
