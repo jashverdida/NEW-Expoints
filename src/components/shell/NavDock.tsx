@@ -9,6 +9,7 @@ import { DockToggle } from "@/components/shell/DockToggle";
 import { dockColumn, dockItem, NO_MOTION } from "@/components/shell/dock-motion";
 import { DOCK, isDockedRoute } from "@/lib/dock";
 import { PRIMARY_NAV, isNavActive } from "@/lib/nav";
+import { useT } from "@/components/shell/PrefsProvider";
 import { cn } from "@/lib/utils";
 
 /**
@@ -34,6 +35,7 @@ export function NavDock() {
   const pathname = usePathname();
   const { open, toggle } = useDock();
   const reduce = useReducedMotion();
+  const t = useT();
 
   const column = dockColumn(-1);
   const item = dockItem(-1);
@@ -83,17 +85,17 @@ export function NavDock() {
                   than a pairing once there's an icon in front. */}
               <h2 className="rule-label min-w-0 flex-1 gap-2">
                 <LayoutGrid className="h-3.5 w-3.5 shrink-0 text-brand-300" />
-                Browse
+                {t("nav.browse")}
               </h2>
               <DockToggle
-                label="Hide navigation cards"
+                label={t("nav.hideNav")}
                 icon={PanelLeftClose}
                 onClick={() => toggle("left")}
               />
             </div>
 
             <ul className="relative space-y-0.5">
-              {PRIMARY_NAV.map(({ href, label, icon: Icon, hint }) => {
+              {PRIMARY_NAV.map(({ href, labelKey, icon: Icon, hintKey }) => {
                 const active = isNavActive(pathname, href);
 
                 return (
@@ -153,14 +155,14 @@ export function NavDock() {
                       </span>
 
                       <span className="relative min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold">{label}</span>
+                        <span className="block truncate text-sm font-semibold">{t(labelKey)}</span>
                         <span
                           className={cn(
                             "block truncate text-[0.68rem] leading-snug transition-colors duration-200",
                             active ? "text-brand-200/70" : "text-ink-faint",
                           )}
                         >
-                          {hint}
+                          {t(hintKey)}
                         </span>
                       </span>
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bookmark, Compass, Home, PenSquare, Sparkles } from "lucide-react";
+import { useT } from "@/components/shell/PrefsProvider";
 import { cn } from "@/lib/utils";
 
 /*
@@ -12,11 +13,11 @@ import { cn } from "@/lib/utils";
  * less frequent action than checking what's hot.
  */
 const TABS = [
-  { href: "/feed", label: "Feed", icon: Home },
-  { href: "/popular", label: "Trending", icon: Compass },
-  { href: "/compose", label: "Post", icon: PenSquare, primary: true },
-  { href: "/newest", label: "Fresh", icon: Sparkles },
-  { href: "/bookmarks", label: "Saved", icon: Bookmark },
+  { href: "/feed", labelKey: "nav.feed" as const, icon: Home },
+  { href: "/popular", labelKey: "nav.trending" as const, icon: Compass },
+  { href: "/compose", labelKey: "nav.post" as const, icon: PenSquare, primary: true },
+  { href: "/newest", labelKey: "nav.fresh" as const, icon: Sparkles },
+  { href: "/bookmarks", labelKey: "nav.saved" as const, icon: Bookmark },
 ];
 
 /**
@@ -29,6 +30,7 @@ const TABS = [
  */
 export function MobileTabBar() {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <nav
@@ -36,7 +38,7 @@ export function MobileTabBar() {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-abyss/85 backdrop-blur-xl lg:hidden"
     >
       <ul className="mx-auto flex max-w-lg items-stretch justify-around px-2 pb-safe pt-1.5">
-        {TABS.map(({ href, label, icon: Icon, primary }) => {
+        {TABS.map(({ href, labelKey, icon: Icon, primary }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
 
           if (primary) {
@@ -64,7 +66,7 @@ export function MobileTabBar() {
                 )}
               >
                 <Icon className="h-5 w-5" />
-                <span className="text-[0.62rem] font-semibold tracking-wide">{label}</span>
+                <span className="text-[0.62rem] font-semibold tracking-wide">{t(labelKey)}</span>
                 {active && <span className="h-0.5 w-5 rounded-full bg-brand-400" />}
               </Link>
             </li>

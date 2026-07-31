@@ -614,7 +614,7 @@ export function Atmosphere({ theme }: { theme: AtmosphereTheme }) {
      * at -z-10. Sitting at 0 puts the atmosphere above the body backdrop, and
      * page content (relative z-10 in the app layout) still paints over it.
      */
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div aria-hidden="true" className="fx-layer pointer-events-none fixed inset-0 z-0 overflow-hidden">
       {theme === "starfield" && <Starfield />}
       {theme === "embers" && <Embers />}
       {theme === "gold" && <GoldHall />}

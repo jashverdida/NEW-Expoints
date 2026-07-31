@@ -20,6 +20,7 @@ import { LevelBadge } from "@/components/ui/LevelBadge";
 import { DOCK } from "@/lib/dock";
 import { nextPerk } from "@/lib/exp";
 import type { Game, Profile } from "@/lib/types";
+import { useT } from "@/components/shell/PrefsProvider";
 import { cn, compactNumber } from "@/lib/utils";
 
 type RailPlayer = Pick<
@@ -51,6 +52,7 @@ export function SideRail({
 }) {
   const { open, toggle, show } = useDock();
   const reduce = useReducedMotion();
+  const t = useT();
   const upcoming = nextPerk(profile.level);
 
   const column = dockColumn(1);
@@ -80,10 +82,10 @@ export function SideRail({
                 <div className="mb-4 flex items-center gap-2">
                   <Zap className="h-4 w-4 shrink-0 text-exp" />
                   <h2 className="flex-1 font-display text-[0.72rem] font-bold uppercase tracking-[0.14em] text-ink-muted">
-                    Your run
+                    {t("rail.yourRun")}
                   </h2>
                   <DockToggle
-                    label="Hide stat cards"
+                    label={t("nav.hideStats")}
                     icon={PanelRightClose}
                     onClick={() => toggle("right")}
                   />
@@ -111,9 +113,9 @@ export function SideRail({
 
                 <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
                   {[
-                    { label: "Reviews", value: profile.post_count },
-                    { label: "Comments", value: profile.comment_count },
-                    { label: "Stars", value: profile.stars_received },
+                    { label: t("rail.reviews"), value: profile.post_count },
+                    { label: t("rail.comments"), value: profile.comment_count },
+                    { label: t("rail.stars"), value: profile.stars_received },
                   ].map((s) => (
                     <div key={s.label} className="rounded-xl bg-white/[0.04] py-2.5">
                       <dd className="stat text-base font-bold">{compactNumber(s.value)}</dd>
@@ -141,11 +143,11 @@ export function SideRail({
               <motion.section variants={item} className="glass rounded-3xl p-5">
                 <h2 className="mb-3.5 flex items-center gap-2 font-display text-sm font-bold uppercase tracking-widest text-ink-muted">
                   <Trophy className="h-4 w-4 text-exp" />
-                  Top players
+                  {t("rail.topPlayers")}
                 </h2>
 
                 {topPlayers.length === 0 ? (
-                  <p className="py-4 text-center text-sm text-ink-faint">Nobody yet.</p>
+                  <p className="py-4 text-center text-sm text-ink-faint">{t("rail.nobodyYet")}</p>
                 ) : (
                   <ol className="space-y-1.5">
                     {topPlayers.map((player, i) => (
@@ -189,7 +191,7 @@ export function SideRail({
                   href="/leaderboard"
                   className="mt-3 flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-300 transition-colors hover:text-brand-200"
                 >
-                  Full leaderboard
+                  {t("rail.fullLeaderboard")}
                   <ArrowRight className="h-3 w-3" />
                 </Link>
               </motion.section>
@@ -199,7 +201,7 @@ export function SideRail({
                 <motion.section variants={item} className="glass rounded-3xl p-5">
                   <h2 className="mb-3.5 flex items-center gap-2 font-display text-sm font-bold uppercase tracking-widest text-ink-muted">
                     <Flame className="h-4 w-4 text-brand-300" />
-                    Most reviewed
+                    {t("rail.mostReviewed")}
                   </h2>
 
                   <ul className="space-y-1.5">
@@ -228,7 +230,7 @@ export function SideRail({
                     href="/games"
                     className="mt-3 flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-300 transition-colors hover:text-brand-200"
                   >
-                    Browse all games
+                    {t("rail.browseGames")}
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                 </motion.section>
@@ -262,7 +264,7 @@ export function SideRail({
                 className="flex h-11 items-center gap-3 rounded-xl border border-brand-400/25 bg-brand-500/12 px-2.5 text-brand-200 transition-colors duration-200 hover:border-brand-400/50 hover:bg-brand-500/22 hover:text-brand-100"
               >
                 <PanelRightOpen className="h-5 w-5 shrink-0" />
-                <TabLabel>Show cards</TabLabel>
+                <TabLabel>{t("nav.showCards")}</TabLabel>
               </button>
 
               <span
@@ -276,7 +278,7 @@ export function SideRail({
                 collapsible cards would be four states to remember and a column
                 that's never quite the same shape twice.
               */}
-              <TabRow label="Your run" onClick={() => show("right")}>
+              <TabRow label={t("rail.yourRun")} onClick={() => show("right")}>
                 <Avatar
                   username={profile.username}
                   avatarUrl={profile.avatar_url}
@@ -285,12 +287,12 @@ export function SideRail({
                 />
               </TabRow>
 
-              <TabRow label="Top players" onClick={() => show("right")}>
+              <TabRow label={t("rail.topPlayers")} onClick={() => show("right")}>
                 <Trophy className="h-5 w-5 text-exp" />
               </TabRow>
 
               {trendingGames.length > 0 && (
-                <TabRow label="Most reviewed" onClick={() => show("right")}>
+                <TabRow label={t("rail.mostReviewed")} onClick={() => show("right")}>
                   <Flame className="h-5 w-5 text-brand-300" />
                 </TabRow>
               )}

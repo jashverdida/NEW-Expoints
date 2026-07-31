@@ -9,9 +9,11 @@ import {
   LogOut,
   Mail,
   ShieldCheck,
+  SlidersHorizontal,
   UserRound,
 } from "lucide-react";
 import { DashboardSettings } from "@/components/settings/DashboardSettings";
+import { PreferenceSettings } from "@/components/settings/PreferenceSettings";
 import { MarkAllReadButton, PasswordResetButton } from "@/components/settings/SettingsActions";
 import { SettingRow, SettingValue } from "@/components/settings/SettingRow";
 import { Avatar } from "@/components/ui/Avatar";
@@ -19,6 +21,7 @@ import { Atmosphere } from "@/components/ui/Atmosphere";
 import { LevelBadge } from "@/components/ui/LevelBadge";
 import { getCurrentProfile, getUnreadCount } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 import { signOut } from "@/lib/actions";
 import { formatDate } from "@/lib/utils";
 
@@ -50,9 +53,10 @@ export default async function SettingsPage() {
 
   // The email lives on the auth user, not the profile row.
   const supabase = await createClient();
-  const [{ data: auth }, unread] = await Promise.all([
+  const [{ data: auth }, unread, t] = await Promise.all([
     supabase.auth.getUser(),
     getUnreadCount(profile.id),
+    getT(),
   ]);
 
   const email = auth.user?.email ?? "";
@@ -66,10 +70,10 @@ export default async function SettingsPage() {
       <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
         <header className="mb-8">
           <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-            <span className="text-gradient">Settings</span>
+            <span className="text-gradient">{t("settings.title")}</span>
           </h1>
           <p className="mt-2 text-sm text-ink-muted">
-            Member since {formatDate(profile.created_at)}.
+            {t("settings.memberSince")} {formatDate(profile.created_at)}.
           </p>
         </header>
 
@@ -78,7 +82,7 @@ export default async function SettingsPage() {
               Top of the page because it's what most people arrive looking for,
               and a preview beats a link labelled "profile" with nothing to
               show for itself. */}
-          <Section icon={UserRound} title="Profile">
+          <Section icon={UserRound} title={t("settings.profile")}>
             <Link
               href="/settings/profile"
               className="group/profile -m-2 flex items-center gap-4 rounded-2xl p-2 transition-colors hover:bg-white/4"
@@ -99,7 +103,7 @@ export default async function SettingsPage() {
                 </p>
                 <p className="truncate text-xs text-ink-faint">@{profile.username}</p>
                 <p className="mt-1.5 line-clamp-1 text-xs text-ink-muted">
-                  {profile.bio || "No bio yet — say something about yourself."}
+                  {profile.bio || t("settings.profile.noBio")}
                 </p>
               </div>
 
@@ -107,20 +111,15 @@ export default async function SettingsPage() {
             </Link>
 
             <p className="mt-4 text-xs leading-relaxed text-ink-faint">
-              Avatar, banner, display name, handle, bio and your favourite game all live on the
-              profile editor.
+              {t("settings.profile.hint")}
             </p>
           </Section>
 
           {/* ── Account ── */}
-          <Section icon={ShieldCheck} title="Account">
+          <Section icon={ShieldCheck} title={t("settings.account")}>
             <SettingRow
-              label="Email address"
-              hint={
-                emailConfirmed
-                  ? "Verified. Used for signing in and for password resets."
-                  : "Not verified yet — check your inbox for the confirmation link."
-              }
+              label={t("settings.email")}
+              hint={t(emailConfirmed ? "settings.email.verified" : "settings.email.unverified")}
               control={
                 <SettingValue>
                   <Mail className="mr-1.5 inline h-3.5 w-3.5 align-[-2px]" />
@@ -130,8 +129,8 @@ export default async function SettingsPage() {
             />
 
             <SettingRow
-              label="Username"
-              hint="Your handle and your profile URL. Changing it breaks old links, so it's edited over on the profile page."
+              label={t("settings.username")}
+              hint={t("settings.username.hint")}
               control={
                 <SettingValue>
                   <AtSign className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
@@ -141,41 +140,42 @@ export default async function SettingsPage() {
             />
 
             <SettingRow
-              label="Password"
-              hint="We'll email a link to set a new one. Changing it straight from a live session, with nothing proving you own the inbox, is what turns a borrowed laptop into a stolen account."
+              label={t("settings.password")}
+              hint={t("settings.password.hint")}
               control={<PasswordResetButton email={email} />}
             />
 
             {profile.role === "admin" && (
               <SettingRow
-                label="Moderator access"
-                hint="You can hide posts, resolve reports and ban accounts."
+                label={t("settings.admin")}
+                hint={t("settings.admin.hint")}
                 control={
                   <Link
                     href="/admin"
                     className="inline-flex h-10 items-center gap-2 rounded-xl border border-exp/30 bg-exp/10 px-4 text-sm font-semibold text-exp transition-colors hover:bg-exp/20"
                   >
-                    Admin panel
+                    {t("settings.admin.open")}
                   </Link>
                 }
               />
             )}
           </Section>
 
+          {/* ── Preferences ── */}
+          <Section icon={SlidersHorizontal} title={t("settings.preferences")}>
+            <PreferenceSettings />
+          </Section>
+
           {/* ── Dashboard ── */}
-          <Section icon={LayoutGrid} title="Dashboard">
+          <Section icon={LayoutGrid} title={t("settings.dashboard")}>
             <DashboardSettings />
           </Section>
 
           {/* ── Notifications ── */}
-          <Section icon={Bell} title="Notifications">
+          <Section icon={Bell} title={t("settings.notifications")}>
             <SettingRow
-              label="Unread"
-              hint={
-                unread > 0
-                  ? "Stars, comments and replies you haven't looked at yet."
-                  : "You're all caught up."
-              }
+              label={t("settings.unread")}
+              hint={t(unread > 0 ? "settings.unread.some" : "settings.unread.none")}
               control={
                 <>
                   <SettingValue>{unread}</SettingValue>
@@ -185,14 +185,14 @@ export default async function SettingsPage() {
             />
 
             <SettingRow
-              label="Notification history"
-              hint="Everything that's happened on your reviews and comments."
+              label={t("settings.history")}
+              hint={t("settings.history.hint")}
               control={
                 <Link
                   href="/notifications"
                   className="btn-ghost inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm"
                 >
-                  Open
+                  {t("settings.open")}
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               }
@@ -202,8 +202,8 @@ export default async function SettingsPage() {
           {/* ── Session ── */}
           <Section icon={LogOut} title="Session" tone="danger">
             <SettingRow
-              label="Sign out"
-              hint="Ends this session on this device. Your reviews, EXP and rank are untouched."
+              label={t("nav.signOut")}
+              hint={t("settings.signOut.hint")}
               control={
                 <form action={signOut}>
                   <button
@@ -211,12 +211,28 @@ export default async function SettingsPage() {
                     className="inline-flex h-10 items-center gap-2 rounded-xl border border-danger/30 bg-danger/10 px-4 text-sm font-semibold text-danger transition-colors hover:bg-danger/20"
                   >
                     <LogOut className="h-4 w-4" />
-                    Sign out
+                    {t("nav.signOut")}
                   </button>
                 </form>
               }
             />
           </Section>
+
+          {/*
+            And once more, full width, at the very bottom.
+            Every settings screen worth using ends this way: you scroll to the
+            end of your account and the way out is the last thing there, big
+            enough that nobody has to hunt for it.
+          */}
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-danger/30 bg-danger/10 py-4 font-display text-sm font-bold uppercase tracking-widest text-danger transition-colors hover:border-danger/50 hover:bg-danger/20"
+            >
+              <LogOut className="h-4 w-4" />
+              {t("nav.signOut")}
+            </button>
+          </form>
         </div>
       </div>
     </>

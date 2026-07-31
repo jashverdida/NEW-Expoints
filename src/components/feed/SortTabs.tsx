@@ -2,12 +2,14 @@
 
 import { Clock, Flame, Trophy } from "lucide-react";
 import type { FeedSort } from "@/lib/types";
+import { useT } from "@/components/shell/PrefsProvider";
+import type { TranslationKey } from "@/lib/i18n/en";
 import { cn } from "@/lib/utils";
 
-const TABS: { value: FeedSort; label: string; icon: React.ElementType; hint: string }[] = [
-  { value: "hot", label: "Hot", icon: Flame, hint: "Trending right now" },
-  { value: "new", label: "New", icon: Clock, hint: "Freshest reviews" },
-  { value: "top", label: "Top", icon: Trophy, hint: "Most starred of all time" },
+const TABS: { value: FeedSort; labelKey: TranslationKey; icon: React.ElementType }[] = [
+  { value: "hot", labelKey: "sort.hot", icon: Flame },
+  { value: "new", labelKey: "sort.new", icon: Clock },
+  { value: "top", labelKey: "sort.top", icon: Trophy },
 ];
 
 /**
@@ -31,7 +33,8 @@ export function SortTabs({
   onChange: (sort: FeedSort) => void;
   busy?: boolean;
 }) {
-  const activeIndex = TABS.findIndex((t) => t.value === active);
+  const t = useT();
+  const activeIndex = TABS.findIndex((tab) => tab.value === active);
 
   return (
     <div
@@ -50,7 +53,7 @@ export function SortTabs({
         }}
       />
 
-      {TABS.map(({ value, label, icon: Icon, hint }) => {
+      {TABS.map(({ value, labelKey, icon: Icon }) => {
         const isActive = active === value;
         return (
           <button
@@ -58,7 +61,7 @@ export function SortTabs({
             type="button"
             role="tab"
             aria-selected={isActive}
-            title={hint}
+
             onClick={() => onChange(value)}
             className={cn(
               "relative z-10 flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors duration-200",
@@ -66,7 +69,7 @@ export function SortTabs({
             )}
           >
             <Icon className={cn("h-4 w-4", isActive && busy && "animate-spin")} />
-            {label}
+            {t(labelKey)}
           </button>
         );
       })}

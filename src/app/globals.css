@@ -1224,3 +1224,41 @@ body::after {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * The same thing again, asked for explicitly in Settings.
+ *
+ * Kept as a separate block rather than folded into the query above, because the
+ * two answer different questions. The media query is "this device says slow
+ * down". This is "I am on a device that never said so, and I still want it to
+ * stop" — a laptop that doesn't expose the OS setting, a shared machine, or
+ * simply a preference. Neither can express the other.
+ */
+:root:has([data-motion="reduced"]) *,
+:root:has([data-motion="reduced"]) *::before,
+:root:has([data-motion="reduced"]) *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/*
+ * Background effects off.
+ *
+ * Hides the decorative layers outright rather than merely stopping them: a
+ * frozen starfield is still 190 elements the compositor has to carry, and the
+ * point of this switch is the battery as much as the calm. Everything it
+ * removes is marked aria-hidden already, so nothing readable goes with it.
+ */
+:root:has([data-effects="off"]) .fx-layer,
+:root:has([data-effects="off"]) .grain-overlay {
+  display: none !important;
+}
+
+/* Body's own aurora and starfield are pseudo-elements, so they need saying
+   separately. The flat background colour underneath stays. */
+:root:has([data-effects="off"]) body::before,
+:root:has([data-effects="off"]) body::after {
+  display: none !important;
+}

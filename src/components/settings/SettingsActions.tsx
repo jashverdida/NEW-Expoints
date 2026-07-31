@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CheckCheck, KeyRound, Loader2 } from "lucide-react";
 import { markNotificationsRead, requestPasswordReset } from "@/lib/actions";
 import { useToast } from "@/components/ui/Toast";
+import { useT } from "@/components/shell/PrefsProvider";
 import type { ActionResult } from "@/lib/types";
 
 /**
@@ -17,6 +18,7 @@ import type { ActionResult } from "@/lib/types";
 export function MarkAllReadButton({ unread }: { unread: number }) {
   const router = useRouter();
   const { push } = useToast();
+  const t = useT();
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(unread === 0);
 
@@ -26,10 +28,10 @@ export function MarkAllReadButton({ unread }: { unread: number }) {
       const result = await markNotificationsRead();
       if (!result.ok) {
         setDone(false);
-        push(result.error ?? "Could not mark those read.", "error");
+        push(result.error ?? t("toast.failed"), "error");
         return;
       }
-      push("All caught up.", "success");
+      push(t("toast.caughtUp"), "success");
       router.refresh();
     });
   };
@@ -42,7 +44,7 @@ export function MarkAllReadButton({ unread }: { unread: number }) {
       className="btn-ghost inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm disabled:cursor-not-allowed disabled:opacity-50"
     >
       {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCheck className="h-4 w-4" />}
-      {done ? "Nothing unread" : "Mark all read"}
+      {done ? t("settings.nothingUnread") : t("settings.markAllRead")}
     </button>
   );
 }
@@ -58,6 +60,7 @@ export function MarkAllReadButton({ unread }: { unread: number }) {
  */
 export function PasswordResetButton({ email }: { email: string }) {
   const { push } = useToast();
+  const t = useT();
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(
     requestPasswordReset,
     null,
@@ -65,8 +68,13 @@ export function PasswordResetButton({ email }: { email: string }) {
 
   useEffect(() => {
     if (!state) return;
-    push(state.ok ? (state.message ?? "Reset link sent.") : (state.error ?? "Something went wrong."), state.ok ? "success" : "error");
-  }, [state, push]);
+    // The action's own message is already user-facing and comes back from the
+    // server; only the fallbacks need translating.
+    push(
+      state.ok ? (state.message ?? t("toast.saved")) : (state.error ?? t("toast.failed")),
+      state.ok ? "success" : "error",
+    );
+  }, [state, push, t]);
 
   return (
     <form action={action}>
@@ -77,7 +85,7 @@ export function PasswordResetButton({ email }: { email: string }) {
         className="btn-ghost inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm disabled:opacity-60"
       >
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
-        Send reset link
+        {t("settings.password.send")}
       </button>
     </form>
   );

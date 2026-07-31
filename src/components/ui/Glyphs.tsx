@@ -124,7 +124,7 @@ export function GlyphField({
   return (
     <div
       aria-hidden="true"
-      className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}
+      className={cn("fx-layer pointer-events-none absolute inset-0 overflow-hidden", className)}
     >
       {glyphs.map((g, i) => (
         <svg
@@ -185,7 +185,7 @@ export function AmbientGlyphs() {
   return (
     // z-0 rather than a negative index — body::before paints an opaque gradient
     // at -2, which would otherwise bury this entirely.
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div aria-hidden="true" className="fx-layer pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <GlyphField density="normal" edgeBias={false} className="opacity-60" />
     </div>
   );

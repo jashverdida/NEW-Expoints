@@ -7,6 +7,7 @@ import { FeedSkeleton } from "@/components/feed/FeedSkeleton";
 import { ContentColumn } from "@/components/shell/ContentColumn";
 import { Atmosphere } from "@/components/ui/Atmosphere";
 import { PAGE_SIZE, getCurrentProfile, getFeed } from "@/lib/queries";
+import { getPrefs } from "@/lib/i18n/server";
 import type { FeedSort } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -27,9 +28,18 @@ export default async function FeedPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
+
+  /*
+   * The URL wins, the saved preference is the fallback.
+   *
+   * That order matters: picking a sort while browsing has to beat the setting,
+   * or the tabs would fight the preference and appear broken. The preference
+   * only decides where you land when the URL says nothing.
+   */
+  const prefs = await getPrefs();
   const sort: FeedSort = ["hot", "new", "top"].includes(params.sort ?? "")
     ? (params.sort as FeedSort)
-    : "hot";
+    : prefs.feedSort;
   const page = Math.max(0, Number(params.page ?? 0) || 0);
   const search = params.q?.trim() || undefined;
   const searchField = (params.field as "title" | "content" | "author") ?? "title";

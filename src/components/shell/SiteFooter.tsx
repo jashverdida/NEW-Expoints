@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ArrowUpRight, Flag, Heart, Mail } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { GlyphField } from "@/components/ui/Glyphs";
+import { getT } from "@/lib/i18n/server";
 
 /** The studio behind EXPoints. */
 const VERPTO_URL = "https://jae-two.vercel.app/";
@@ -21,11 +22,11 @@ const TEAM = [
  * page someone still has to write.
  */
 const ABOUT_LINKS = [
-  { href: "/#exp", label: "How EXP works" },
-  { href: "/#ranks", label: "The rank ladder" },
-  { href: "/#features", label: "What's inside" },
-  { href: "/#team", label: "Meet the team" },
-  { href: "/discover", label: "Discover reviews" },
+  { href: "/#exp", labelKey: "footer.about.exp" as const },
+  { href: "/#ranks", labelKey: "footer.about.ranks" as const },
+  { href: "/#features", labelKey: "footer.about.features" as const },
+  { href: "/#team", labelKey: "footer.about.team" as const },
+  { href: "/discover", labelKey: "footer.about.discover" as const },
 ];
 
 /**
@@ -50,7 +51,8 @@ const ABOUT_LINKS = [
  * Themed for free: every colour here comes from the brand ramp, so the footer
  * under Ranks is gold and the one under Trending is ember. See globals.css.
  */
-export function SiteFooter() {
+export async function SiteFooter() {
+  const t = await getT();
   const year = new Date().getFullYear();
 
   return (
@@ -77,30 +79,30 @@ export function SiteFooter() {
             <Logo className="text-xl" showSpark />
 
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-muted">
-              Write reviews. Earn EXP. Climb the ranks. A game forum where having
-              an opinion actually counts for something.
+              {t("footer.tagline")}
+
             </p>
 
             <p className="mt-5 inline-flex items-center gap-2 rounded-pill border border-exp/25 bg-exp/8 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-widest text-exp">
               <span aria-hidden="true">✦</span>
-              Every review earns EXP
+              {t("footer.expChip")}
             </p>
           </div>
 
           {/* ── What this place is ── */}
           <nav aria-labelledby="footer-about">
             <h2 id="footer-about" className="rule-label mb-4">
-              About
+              {t("footer.about")}
             </h2>
             <ul className="space-y-2.5">
-              {ABOUT_LINKS.map(({ href, label }) => (
+              {ABOUT_LINKS.map(({ href, labelKey }) => (
                 <li key={href}>
                   <Link
                     href={href}
                     className="group/link inline-flex items-center gap-1.5 text-sm text-ink-muted transition-colors hover:text-ink"
                   >
                     <span className="relative">
-                      {label}
+                      {t(labelKey)}
                       {/* Underline that draws in from the left on hover. */}
                       <span
                         aria-hidden="true"
@@ -115,7 +117,7 @@ export function SiteFooter() {
 
           {/* ── The studio ── */}
           <div>
-            <h2 className="rule-label mb-4">Built by</h2>
+            <h2 className="rule-label mb-4">{t("footer.builtBy")}</h2>
 
             <a
               href={VERPTO_URL}
@@ -141,7 +143,7 @@ export function SiteFooter() {
               Roles earn their place: with three names and no context this reads
               as an undifferentiated list of strangers. */}
           <div>
-            <h2 className="rule-label mb-4">Get in touch</h2>
+            <h2 className="rule-label mb-4">{t("footer.getInTouch")}</h2>
 
             <ul className="space-y-3">
               {TEAM.map(({ name, role, email }) => (
@@ -167,7 +169,7 @@ export function SiteFooter() {
 
         {/* ── Bottom bar ── */}
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/8 pt-6 text-xs text-ink-faint sm:flex-row">
-          <p>© {year} EXPoints. All rights reserved.</p>
+          <p>© {year} EXPoints. {t("footer.rights")}</p>
 
           {/* Support lives in the bottom bar rather than in a column of its own
               — it's one link, and this is where people look for it. */}
@@ -177,13 +179,13 @@ export function SiteFooter() {
               className="inline-flex items-center gap-1.5 transition-colors hover:text-ink"
             >
               <Flag className="h-3.5 w-3.5" />
-              Report a problem
+              {t("footer.report")}
             </Link>
 
             <p className="flex items-center gap-1.5">
-              Crafted with
+              {t("footer.crafted")}
               <Heart className="h-3.5 w-3.5 fill-danger text-danger" aria-label="love" />
-              by
+              {t("footer.by")}
               <a
                 href={VERPTO_URL}
                 target="_blank"

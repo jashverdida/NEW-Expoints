@@ -1,6 +1,7 @@
 "use client";
 
 import { useDock } from "@/components/shell/DockProvider";
+import { useT } from "@/components/shell/PrefsProvider";
 import { SettingRow } from "@/components/settings/SettingRow";
 import { Switch } from "@/components/settings/Switch";
 
@@ -18,26 +19,31 @@ import { Switch } from "@/components/settings/Switch";
  */
 export function DashboardSettings() {
   const { open, toggle } = useDock();
+  const t = useT();
 
   return (
     <>
       <SettingRow
-        label="Navigation cards"
-        hint="The Browse card down the left of Feed, Trending, Fresh, Games, Ranks and Saved. Turned off, the same links live on the slim rail at the edge of the screen."
+        label={t("settings.navCards")}
+        hint={t("settings.navCards.hint")}
         control={
           <Switch
             checked={open.left}
             onChange={() => toggle("left")}
-            label="Show navigation cards"
+            label={t("settings.navCards")}
           />
         }
       />
 
       <SettingRow
-        label="Stat cards"
-        hint="Your EXP progress, the leaderboard and the most-reviewed games, down the right. Turned off, they collapse to a tab you can pull back out any time."
+        label={t("settings.statCards")}
+        hint={t("settings.statCards.hint")}
         control={
-          <Switch checked={open.right} onChange={() => toggle("right")} label="Show stat cards" />
+          <Switch
+            checked={open.right}
+            onChange={() => toggle("right")}
+            label={t("settings.statCards")}
+          />
         }
       />
     </>

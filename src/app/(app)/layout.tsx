@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { AppNav, AppNavSkeleton } from "@/components/shell/AppNav";
 import { DockShell } from "@/components/shell/DockShell";
+import { PrefsShell } from "@/components/shell/PrefsShell";
 import { SectionTheme } from "@/components/shell/SectionTheme";
 import { SiteFooter } from "@/components/shell/SiteFooter";
 import { AmbientGlyphs } from "@/components/ui/Glyphs";
@@ -50,10 +51,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="grain-overlay" aria-hidden="true" />
 
       {/*
-        Carries the saved dock preference into the tree. The only awaited thing
-        in this file, and the only one allowed to be: it reads a cookie, not a
-        database (see DockShell for why that distinction is the whole ballgame).
+        The two preference shells. They're the only awaited things in this file,
+        and the only ones allowed to be: they read cookies, not a database (see
+        DockShell for why that distinction is the whole ballgame).
+
+        PrefsShell is outermost because language changes what everything below
+        it renders, docks included.
       */}
+      <PrefsShell>
       <DockShell>
         {/* z-10 keeps content above the fixed atmosphere layer at z-0. */}
         <div className="relative z-10 flex min-h-dvh flex-col">
@@ -73,6 +78,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <SiteFooter />
         </div>
       </DockShell>
+      </PrefsShell>
       </ConfirmProvider>
       </GuestPromptProvider>
     </ToastProvider>

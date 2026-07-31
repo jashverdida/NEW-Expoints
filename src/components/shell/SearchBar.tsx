@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Search, X } from "lucide-react";
+import { useT } from "@/components/shell/PrefsProvider";
 import { cn } from "@/lib/utils";
 
 const FIELDS = [
@@ -27,6 +28,7 @@ export function SearchBar({ className }: { className?: string }) {
   const [query, setQuery] = useState(params.get("q") ?? "");
   const [field, setField] = useState<Field>((params.get("field") as Field) ?? "title");
   const [menuOpen, setMenuOpen] = useState(false);
+  const t = useT();
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Keep the input in sync when the URL changes from elsewhere (e.g. back).
@@ -64,8 +66,8 @@ export function SearchBar({ className }: { className?: string }) {
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search a review, a game, anything…"
-        aria-label="Search reviews"
+        placeholder={t("header.searchPlaceholder")}
+        aria-label={t("header.searchLabel")}
         className="field h-11 !pl-10 pr-[7.5rem] text-sm [&::-webkit-search-cancel-button]:hidden"
       />
 

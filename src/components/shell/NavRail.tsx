@@ -10,6 +10,7 @@ import { DOCK_BREAKPOINT, useMediaQuery } from "@/components/shell/use-media-que
 import { signOut } from "@/lib/actions";
 import { isDockedRoute } from "@/lib/dock";
 import { PRIMARY_NAV, isNavActive } from "@/lib/nav";
+import { useT } from "@/components/shell/PrefsProvider";
 import { cn } from "@/lib/utils";
 
 /**
@@ -33,6 +34,7 @@ export function NavRail() {
   const pathname = usePathname();
   const { open, toggle } = useDock();
   const reduce = useReducedMotion();
+  const t = useT();
 
   /*
    * Whether the nav card has taken over. Only true where a card actually
@@ -79,7 +81,7 @@ export function NavRail() {
               className="hidden h-11 items-center gap-3 rounded-xl border border-brand-400/25 bg-brand-500/12 px-2.5 text-brand-200 transition-colors duration-200 hover:border-brand-400/50 hover:bg-brand-500/22 hover:text-brand-100 xl:flex"
             >
               <PanelLeftOpen className="h-5 w-5 shrink-0" />
-              <RailLabel>Show cards</RailLabel>
+              <RailLabel>{t("nav.showCards")}</RailLabel>
             </button>
 
             <span
@@ -89,7 +91,7 @@ export function NavRail() {
           </>
         )}
 
-        {PRIMARY_NAV.map(({ href, label, icon: Icon }) => {
+        {PRIMARY_NAV.map(({ href, labelKey, icon: Icon }) => {
           const active = isNavActive(pathname, href);
 
           return (
@@ -113,7 +115,7 @@ export function NavRail() {
                 />
               )}
               <Icon className="relative h-5 w-5 shrink-0" />
-              <RailLabel className={active ? "font-bold" : undefined}>{label}</RailLabel>
+              <RailLabel className={active ? "font-bold" : undefined}>{t(labelKey)}</RailLabel>
             </Link>
           );
         })}
@@ -124,7 +126,7 @@ export function NavRail() {
             className="flex h-11 w-full items-center gap-3 rounded-xl px-2.5 text-danger transition-colors duration-200 hover:bg-danger/15"
           >
             <LogOut className="h-5 w-5 shrink-0" />
-            <RailLabel>Sign out</RailLabel>
+            <RailLabel>{t("nav.signOut")}</RailLabel>
           </button>
         </form>
       </nav>
