@@ -172,7 +172,7 @@ export default async function AdminPage({
             className={cn(
               "flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all",
               tab === value
-                ? "bg-gradient-to-br from-brand-400 to-brand-600 text-[#041124] shadow-[0_6px_20px_-6px_rgba(56,160,255,0.8)]"
+                ? "bg-gradient-to-br from-brand-400 to-brand-600 text-ink-on-accent glow-accent"
                 : "text-ink-muted hover:bg-white/5 hover:text-ink",
             )}
           >
@@ -182,7 +182,7 @@ export default async function AdminPage({
               <span
                 className={cn(
                   "grid h-5 min-w-5 place-items-center rounded-full px-1 text-[0.6rem] font-bold",
-                  tab === value ? "bg-[#041124]/25 text-[#041124]" : "bg-danger text-white",
+                  tab === value ? "bg-ink-on-accent/25 text-ink-on-accent" : "bg-danger text-white",
                 )}
               >
                 {badge}

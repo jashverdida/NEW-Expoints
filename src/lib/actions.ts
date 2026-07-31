@@ -66,6 +66,21 @@ async function requireAdmin(): Promise<Guard> {
    Auth
    ─────────────────────────────────────────────────────────────────────────── */
 
+/**
+ * Where a freshly signed-in user should land.
+ *
+ * Admins get the moderation panel — reports and image uploads are what they
+ * open the app to deal with. They can still reach the feed from the nav; this
+ * only decides the default.
+ *
+ * Exported so the landing page's "Enter forum" button agrees with it rather
+ * than hardcoding /feed in a second place.
+ */
+export async function defaultLandingPath(): Promise<"/admin" | "/feed"> {
+  const profile = await getCurrentProfile();
+  return profile?.role === "admin" ? "/admin" : "/feed";
+}
+
 export async function signIn(
   _prev: ActionResult | null,
   formData: FormData,
@@ -86,7 +101,27 @@ export async function signIn(
   }
 
   revalidatePath("/", "layout");
-  redirect(next.startsWith("/") ? next : "/feed");
+
+  /*
+   * Admins land on the admin panel, everyone else on the feed.
+   *
+   * An explicit `next` still wins: if middleware bounced someone off
+   * /bookmarks to sign in, they should end up back at /bookmarks rather than
+   * being dumped on a dashboard they didn't ask for. Only the *default*
+   * destination changes by role.
+   */
+  const explicitTarget = next.startsWith("/") && next !== "/feed" ? next : null;
+  const target = explicitTarget ?? (await defaultLandingPath());
+
+  /*
+   * `welcome=1` is what triggers the welcome-back modal in the app shell.
+   *
+   * A query flag rather than a client-side "first page of the session" check:
+   * it can only be set by a sign-in that actually succeeded, so the modal never
+   * appears on a refresh or in a second tab. <WelcomeBack> strips it from the
+   * URL the moment it reads it.
+   */
+  redirect(`${target}${target.includes("?") ? "&" : "?"}welcome=1`);
 }
 
 export async function signUp(
@@ -166,7 +201,8 @@ export async function signUp(
   }
 
   revalidatePath("/", "layout");
-  redirect("/feed?welcome=1");
+  // `new` rather than `1`: same modal, first-run copy.
+  redirect("/feed?welcome=new");
 }
 
 export async function signOut() {

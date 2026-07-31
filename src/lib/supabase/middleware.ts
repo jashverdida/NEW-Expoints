@@ -79,9 +79,17 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Already signed in and looking at /login or /register — send them to their
+  // dashboard. Admins get the moderation panel, everyone else the feed.
   if (user && AUTH_ROUTES.includes(path)) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
     const url = request.nextUrl.clone();
-    url.pathname = "/feed";
+    url.pathname = profile?.role === "admin" ? "/admin" : "/feed";
     url.search = "";
     return NextResponse.redirect(url);
   }

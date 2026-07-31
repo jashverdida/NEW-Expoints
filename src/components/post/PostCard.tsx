@@ -20,6 +20,7 @@ import { StarButton } from "@/components/post/StarButton";
 import { BookmarkButton } from "@/components/post/BookmarkButton";
 import { RatingBadge } from "@/components/post/RatingBadge";
 import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { deletePost, setPostHidden } from "@/lib/actions";
 import type { FeedPostWithViewer, Profile } from "@/lib/types";
 import { cn, compactNumber, excerpt, readingTime, timeAgo } from "@/lib/utils";
@@ -43,6 +44,7 @@ export function PostCard({
 }) {
   const router = useRouter();
   const { push } = useToast();
+  const confirm = useConfirm();
   const [menuOpen, setMenuOpen] = useState(false);
   const [, startTransition] = useTransition();
 
@@ -60,23 +62,51 @@ export function PostCard({
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     setMenuOpen(false);
-    if (!confirm("Delete this review permanently?")) return;
+    const result = await confirm({
+      variant: "danger",
+      title: "Delete this review?",
+      body: `"${post.title}" and all of its comments go permanently. The EXP it earned is removed too. This can't be undone.`,
+      confirmLabel: "Delete permanently",
+    });
+    if (!result) return;
+
     startTransition(async () => {
-      const result = await deletePost(post.id);
-      push(result.ok ? "Review deleted." : result.error, result.ok ? "success" : "error");
-      if (result.ok) router.refresh();
+      const outcome = await deletePost(post.id);
+      push(outcome.ok ? "Review deleted." : outcome.error, outcome.ok ? "success" : "error");
+      if (outcome.ok) router.refresh();
     });
   };
 
-  const handleHide = () => {
+  const handleHide = async () => {
     setMenuOpen(false);
-    const reason = prompt("Reason for hiding this post?") ?? undefined;
+    const hiding = !post.is_hidden;
+
+    const result = await confirm({
+      variant: hiding ? "warning" : "success",
+      title: hiding ? "Hide this review?" : "Restore this review?",
+      body: hiding
+        ? "It disappears from the feed and search for everyone except the author and admins. Nothing is deleted."
+        : "It returns to the feed and becomes visible to everyone again.",
+      confirmLabel: hiding ? "Hide it" : "Restore it",
+      reason: hiding
+        ? {
+            label: "Reason",
+            placeholder: "Why is this being hidden?",
+            hint: "Recorded in the moderation log for other admins.",
+          }
+        : undefined,
+    });
+    if (!result) return;
+
     startTransition(async () => {
-      const result = await setPostHidden(post.id, !post.is_hidden, reason);
-      push(result.ok ? (result.message ?? "Done.") : result.error, result.ok ? "success" : "error");
-      if (result.ok) router.refresh();
+      const outcome = await setPostHidden(post.id, hiding, result.reason || undefined);
+      push(
+        outcome.ok ? (outcome.message ?? "Done.") : outcome.error,
+        outcome.ok ? "success" : "error",
+      );
+      if (outcome.ok) router.refresh();
     });
   };
 

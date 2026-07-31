@@ -67,7 +67,7 @@ export function ComposerTrigger({ profile }: { profile: Profile }) {
         <Link
           href="/compose"
           aria-label="Write a review"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-[#041124] sm:hidden"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-ink-on-accent sm:hidden"
         >
           <PenSquare className="h-4 w-4" />
         </Link>

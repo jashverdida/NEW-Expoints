@@ -103,7 +103,7 @@ export function ProfileView({
 
             {isOwnProfile && (
               <Link
-                href="/settings"
+                href="/settings/profile"
                 className="btn-ghost hidden h-10 shrink-0 items-center gap-2 rounded-xl px-4 text-sm sm:inline-flex"
               >
                 <Settings className="h-4 w-4" />
@@ -116,7 +116,7 @@ export function ProfileView({
               name into a narrow column. */}
           {isOwnProfile && (
             <Link
-              href="/settings"
+              href="/settings/profile"
               className="btn-ghost mt-4 inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm sm:hidden"
             >
               <Settings className="h-4 w-4" />

@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { Gamepad2, Search, Star } from "lucide-react";
-import { getGames } from "@/lib/queries";
+import { getCurrentProfile, getGames } from "@/lib/queries";
 import { EmptyState } from "@/components/feed/EmptyState";
 import { PageHero } from "@/components/feed/PageHero";
+import { SideRailPanel } from "@/components/feed/SideRailPanel";
+import { ContentColumn } from "@/components/shell/ContentColumn";
 import { ratingVerdict } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -17,7 +20,11 @@ export default async function GamesPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  const games = await getGames(q);
+
+  // The profile is only for the layout — the catalogue reads the same for
+  // everyone. getCurrentProfile is cache()d and the shell has already called
+  // it, so this costs nothing.
+  const [games, viewer] = await Promise.all([getGames(q), getCurrentProfile()]);
 
   const totalReviews = games.reduce((sum, g) => sum + g.post_count, 0);
   const rated = games.filter((g) => g.avg_rating !== null);
@@ -27,7 +34,8 @@ export default async function GamesPage({
       : 0;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+    <>
+    <ContentColumn docked={!!viewer} variant="grid">
       <PageHero
         icon={<span aria-hidden="true">🎮</span>}
         title="The Library"
@@ -127,6 +135,13 @@ export default async function GamesPage({
           })}
         </div>
       )}
-    </div>
+    </ContentColumn>
+
+    {/* Fixed beside the column, streaming in on its own so the catalogue paints
+        first and never moves. */}
+    <Suspense fallback={null}>
+      <SideRailPanel />
+    </Suspense>
+    </>
   );
 }

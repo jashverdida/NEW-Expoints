@@ -19,7 +19,7 @@ export function Logo({
         <svg
           viewBox="0 0 24 24"
           aria-hidden="true"
-          className="h-[0.85em] w-[0.85em] shrink-0 -translate-y-[0.12em] text-brand-300 drop-shadow-[0_0_10px_rgba(56,160,255,0.9)]"
+          className="h-[0.85em] w-[0.85em] shrink-0 -translate-y-[0.12em] text-brand-300 drop-shadow-[0_0_10px_color-mix(in_oklab,var(--color-brand-400)_90%,transparent)]"
         >
           <path
             fill="currentColor"

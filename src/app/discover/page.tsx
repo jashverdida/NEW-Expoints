@@ -58,7 +58,7 @@ export default async function DiscoverPage({
       <div className="grain-overlay" aria-hidden="true" />
 
       <div className="relative z-10 min-h-dvh">
-        <header className="sticky top-0 z-40 border-b border-white/8 bg-abyss/75 backdrop-blur-xl">
+        <header className="app-header sticky top-0 z-40">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
             <Link href="/" aria-label="EXPoints home">
               <Logo className="text-lg sm:text-xl" />
@@ -115,7 +115,7 @@ export default async function DiscoverPage({
                 className={cn(
                   "flex-1 rounded-xl px-3 py-2.5 text-center text-sm font-semibold transition-all",
                   sort === value
-                    ? "bg-gradient-to-br from-brand-400 to-brand-600 text-[#041124]"
+                    ? "bg-gradient-to-br from-brand-400 to-brand-600 text-ink-on-accent"
                     : "text-ink-muted hover:bg-white/5 hover:text-ink",
                 )}
               >

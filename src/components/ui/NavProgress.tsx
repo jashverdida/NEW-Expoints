@@ -180,7 +180,8 @@ export function NavProgress() {
           style={{
             width: `${pct}%`,
             opacity: value >= 1 ? 0 : 1,
-            boxShadow: "0 0 12px 1px rgba(56,160,255,0.9), 0 0 4px rgba(0,229,255,0.9)",
+            boxShadow:
+              "0 0 12px 1px color-mix(in oklab, var(--color-brand-400) 90%, transparent), 0 0 4px color-mix(in oklab, var(--color-plasma) 90%, transparent)",
           }}
         />
       </div>

@@ -45,7 +45,7 @@ export function MobileTabBar() {
                 <Link
                   href={href}
                   aria-label="Write a review"
-                  className="mx-auto -mt-5 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 text-[#041124] shadow-[0_10px_28px_-6px_rgba(56,160,255,0.85)] transition-transform active:scale-95"
+                  className="mx-auto -mt-5 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 text-ink-on-accent glow-accent-lg transition-transform active:scale-95"
                 >
                   <Icon className="h-6 w-6" />
                 </Link>

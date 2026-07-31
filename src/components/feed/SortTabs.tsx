@@ -43,7 +43,7 @@ export function SortTabs({
           enough that it never feels like waiting. */}
       <span
         aria-hidden="true"
-        className="absolute inset-y-1.5 left-1.5 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 shadow-[0_6px_20px_-6px_rgba(56,160,255,0.8)] transition-transform duration-200 ease-out"
+        className="absolute inset-y-1.5 left-1.5 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 glow-accent transition-transform duration-200 ease-out"
         style={{
           width: `calc((100% - 0.75rem) / ${TABS.length})`,
           transform: `translateX(${activeIndex * 100}%)`,
@@ -62,7 +62,7 @@ export function SortTabs({
             onClick={() => onChange(value)}
             className={cn(
               "relative z-10 flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors duration-200",
-              isActive ? "text-[#041124]" : "text-ink-muted hover:text-ink",
+              isActive ? "text-ink-on-accent" : "text-ink-muted hover:text-ink",
             )}
           >
             <Icon className={cn("h-4 w-4", isActive && busy && "animate-spin")} />

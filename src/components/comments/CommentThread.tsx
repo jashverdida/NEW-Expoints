@@ -9,6 +9,7 @@ import { AdminBadge, LevelBadge } from "@/components/ui/LevelBadge";
 import { StarButton } from "@/components/post/StarButton";
 import { CommentForm } from "@/components/comments/CommentForm";
 import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { deleteComment } from "@/lib/actions";
 import type { Comment, Profile } from "@/lib/types";
 import { cn, timeAgo } from "@/lib/utils";
@@ -33,6 +34,7 @@ function CommentNode({
 }) {
   const router = useRouter();
   const { push } = useToast();
+  const confirm = useConfirm();
   const [replying, setReplying] = useState(false);
   const [showReplies, setShowReplies] = useState(depth === 0 && comment.reply_count <= 3);
   const [, startTransition] = useTransition();
@@ -40,8 +42,18 @@ function CommentNode({
   const replies = comment.replies ?? [];
   const canDelete = viewer && (viewer.id === comment.author_id || viewer.role === "admin");
 
-  const handleDelete = () => {
-    if (!confirm("Delete this comment?")) return;
+  const handleDelete = async () => {
+    const isOwn = viewer?.id === comment.author_id;
+    const outcome = await confirm({
+      variant: "danger",
+      title: "Delete this comment?",
+      body: isOwn
+        ? "Your comment and any replies to it are removed, along with the EXP it earned."
+        : `@${comment.author.username}'s comment and any replies to it are removed. This is logged.`,
+      confirmLabel: "Delete comment",
+    });
+    if (!outcome) return;
+
     startTransition(async () => {
       const result = await deleteComment(comment.id, postId);
       push(result.ok ? "Comment deleted." : result.error, result.ok ? "success" : "error");

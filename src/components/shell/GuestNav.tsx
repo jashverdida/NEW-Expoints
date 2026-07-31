@@ -12,7 +12,7 @@ import { Logo } from "@/components/ui/Logo";
  */
 export function GuestNav() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/8 bg-abyss/75 backdrop-blur-xl">
+    <header className="app-header sticky top-0 z-40">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3.5 sm:px-6">
         <Link href="/" aria-label="EXPoints home" className="shrink-0">
           <Logo className="text-lg sm:text-xl" />

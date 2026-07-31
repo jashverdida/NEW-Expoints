@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { MessageSquare, Star, Zap } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { LevelBadge } from "@/components/ui/LevelBadge";
 import { getCurrentProfile, getLeaderboard, type LeaderboardScope } from "@/lib/queries";
 import { PageHero } from "@/components/feed/PageHero";
+import { SideRailPanel } from "@/components/feed/SideRailPanel";
+import { ContentColumn } from "@/components/shell/ContentColumn";
 import { Atmosphere } from "@/components/ui/Atmosphere";
 import { rankForLevel } from "@/lib/exp";
 import { cn, compactNumber } from "@/lib/utils";
@@ -47,7 +50,7 @@ export default async function LeaderboardPage({
       {/* Trophy-hall light shafts and drifting gold. */}
       <Atmosphere theme="gold" />
 
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+      <ContentColumn docked={!!viewer}>
       <PageHero
         icon={<span aria-hidden="true">👑</span>}
         title="Hall of Fame"
@@ -75,7 +78,7 @@ export default async function LeaderboardPage({
             className={cn(
               "flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all",
               scope === value
-                ? "bg-gradient-to-br from-brand-400 to-brand-600 text-[#041124] shadow-[0_6px_20px_-6px_rgba(56,160,255,0.8)]"
+                ? "bg-gradient-to-br from-brand-400 to-brand-600 text-ink-on-accent glow-accent"
                 : "text-ink-muted hover:bg-white/5 hover:text-ink",
             )}
           >
@@ -104,9 +107,21 @@ export default async function LeaderboardPage({
                     "glass card-interactive flex items-center gap-3 rounded-2xl px-3.5 py-3 sm:gap-4 sm:px-5",
                     isMe && "ring-1 ring-brand-400/50",
                   )}
+                  /*
+                   * An inline background, so it replaces .glass outright rather
+                   * than layering over it — which is why the second stop has to
+                   * be the section's own surface tone. As a fixed rgba() it was
+                   * a navy podium row sitting on a gold page, and no amount of
+                   * theming elsewhere could reach past an inline style.
+                   *
+                   * rank.accent stays literal: that's the player's rank colour,
+                   * identity rather than chrome.
+                   */
                   style={
                     isPodium
-                      ? { background: `linear-gradient(100deg, ${rank.accent}12, rgba(5,11,30,0.65))` }
+                      ? {
+                          background: `linear-gradient(100deg, ${rank.accent}12, color-mix(in oklab, var(--color-void) 65%, transparent))`,
+                        }
                       : undefined
                   }
                 >
@@ -156,7 +171,13 @@ export default async function LeaderboardPage({
           })}
         </ol>
         )}
-      </div>
+      </ContentColumn>
+
+      {/* Fixed beside the column, streaming in on its own so the page paints
+          first and never moves. */}
+      <Suspense fallback={null}>
+        <SideRailPanel />
+      </Suspense>
     </>
   );
 }

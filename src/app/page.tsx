@@ -18,9 +18,11 @@ import { BoxArtRail } from "@/components/landing/BoxArtRail";
 import { DevCard, type Dev } from "@/components/landing/DevCard";
 import { Marquee } from "@/components/landing/Marquee";
 import { GlyphField } from "@/components/ui/Glyphs";
+import { SiteFooter } from "@/components/shell/SiteFooter";
 import { Logo } from "@/components/ui/Logo";
 import { EXP_REWARDS, RANKS } from "@/lib/exp";
 import { getCurrentProfile, getGames, getTopPlayers } from "@/lib/queries";
+import { defaultLandingPath } from "@/lib/actions";
 import { Avatar } from "@/components/ui/Avatar";
 import { LevelBadge } from "@/components/ui/LevelBadge";
 import { compactNumber } from "@/lib/utils";
@@ -113,6 +115,10 @@ export default async function LandingPage() {
     getTopPlayers(5),
   ]);
 
+  // Admins are sent to the moderation panel, everyone else to the feed. Shared
+  // with the sign-in action so the two can't drift apart.
+  const homePath = await defaultLandingPath();
+
   const gameTitles = games.length
     ? games.map((g) => g.name)
     : ["Elden Ring", "Baldur's Gate 3", "Hollow Knight: Silksong", "Balatro", "Persona 5 Royal"];
@@ -154,7 +160,7 @@ export default async function LandingPage() {
           <div className="flex items-center gap-2.5">
             {profile ? (
               <Link
-                href="/feed"
+                href={homePath}
                 className="btn-primary inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm sm:px-5"
               >
                 Enter forum
@@ -210,7 +216,7 @@ export default async function LandingPage() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Link
-                href={profile ? "/feed" : "/register"}
+                href={profile ? homePath : "/register"}
                 className="btn-primary inline-flex h-14 items-center justify-center gap-2 rounded-2xl px-8 font-display text-[0.95rem] uppercase tracking-widest"
               >
                 {profile ? "Back to the feed" : "Start at Level 1"}
@@ -469,7 +475,7 @@ export default async function LandingPage() {
           Free, takes a minute, and you start climbing immediately.
         </p>
         <Link
-          href={profile ? "/feed" : "/register"}
+          href={profile ? homePath : "/register"}
           className="btn-primary mt-8 inline-flex h-14 items-center gap-2 rounded-2xl px-9 font-display text-[0.95rem] uppercase tracking-widest"
         >
           {profile ? "Go to the feed" : "Create your account"}
@@ -477,19 +483,7 @@ export default async function LandingPage() {
         </Link>
       </section>
 
-      {/* ── Footer ──────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/8 px-5 py-9 sm:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 text-sm text-ink-faint sm:flex-row">
-          <Logo className="text-base" />
-          <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            <Link href="/discover" className="transition-colors hover:text-ink">Discover</Link>
-            <Link href="/games" className="transition-colors hover:text-ink">Games</Link>
-            <Link href="/leaderboard" className="transition-colors hover:text-ink">Leaderboard</Link>
-            <Link href="/login" className="transition-colors hover:text-ink">Log in</Link>
-          </nav>
-          <p>© {new Date().getFullYear()} EXPoints</p>
-        </div>
-      </footer>
+      <SiteFooter />
       </div>
     </div>
   );

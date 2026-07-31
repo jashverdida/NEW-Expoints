@@ -7,6 +7,7 @@ import { Ban, Loader2, ShieldCheck, ShieldOff, UserCheck } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { LevelBadge } from "@/components/ui/LevelBadge";
 import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { setUserBanned, setUserRole } from "@/lib/actions";
 import type { Profile } from "@/lib/types";
 import { cn, compactNumber, timeAgo } from "@/lib/utils";
@@ -21,6 +22,7 @@ import { cn, compactNumber, timeAgo } from "@/lib/utils";
 export function UserRow({ user, viewerId }: { user: Profile; viewerId: string }) {
   const router = useRouter();
   const { push } = useToast();
+  const confirm = useConfirm();
   const [pending, startTransition] = useTransition();
   const [busy, setBusy] = useState<"ban" | "role" | null>(null);
 
@@ -39,25 +41,71 @@ export function UserRow({ user, viewerId }: { user: Profile; viewerId: string })
     });
   };
 
-  const handleBanToggle = () => {
+  /** Avatar + handle chip, shown at the top of each dialog so there's no doubt
+   *  which account is about to be affected. */
+  const subject = (
+    <span className="inline-flex items-center gap-2.5 rounded-pill border border-white/10 bg-white/[0.04] py-1.5 pl-1.5 pr-4">
+      <Avatar
+        username={user.username}
+        avatarUrl={user.avatar_url}
+        level={user.level}
+        size="sm"
+      />
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-bold leading-tight">
+          {user.display_name || user.username}
+        </span>
+        <span className="block truncate text-[0.7rem] text-ink-faint">@{user.username}</span>
+      </span>
+    </span>
+  );
+
+  const handleBanToggle = async () => {
     if (user.is_banned) {
-      if (!confirm(`Unban @${user.username}? They'll be able to log in again.`)) return;
+      const result = await confirm({
+        variant: "success",
+        subject,
+        title: "Lift this ban?",
+        body: "They'll be able to log in immediately, and their reviews return to the feed. They'll get a notification letting them know.",
+        confirmLabel: "Unban account",
+      });
+      if (!result) return;
       run("ban", () => setUserBanned(user.id, false));
       return;
     }
 
-    const reason = prompt(
-      `Ban @${user.username}?\n\nThe reason below is shown to them when they try to log in.`,
-      "Violated the community guidelines.",
-    );
-    if (reason === null) return;
-    run("ban", () => setUserBanned(user.id, true, reason.trim() || undefined));
+    const result = await confirm({
+      variant: "danger",
+      subject,
+      title: "Ban this account?",
+      body: "They lose access immediately and every review they've written disappears from the forum. This can be undone.",
+      confirmLabel: "Ban account",
+      reason: {
+        label: "Reason for the ban",
+        defaultValue: "Violated the community guidelines.",
+        placeholder: "What did they do?",
+        required: true,
+        hint: "Shown to them on the login screen, so write it for them to read.",
+      },
+    });
+    if (!result) return;
+    run("ban", () => setUserBanned(user.id, true, result.reason || undefined));
   };
 
-  const handleRoleToggle = () => {
+  const handleRoleToggle = async () => {
     const nextRole = user.role === "admin" ? "user" : "admin";
-    const verb = nextRole === "admin" ? "Promote" : "Demote";
-    if (!confirm(`${verb} @${user.username} to ${nextRole}?`)) return;
+    const promoting = nextRole === "admin";
+
+    const result = await confirm({
+      variant: promoting ? "info" : "warning",
+      subject,
+      title: promoting ? "Promote to admin?" : "Demote to standard user?",
+      body: promoting
+        ? "They'll be able to hide posts, delete any content, ban accounts and promote other admins. Every action they take is logged."
+        : "They lose access to the admin panel and all moderation tools. Their reviews and EXP are untouched.",
+      confirmLabel: promoting ? "Make them an admin" : "Remove admin access",
+    });
+    if (!result) return;
     run("role", () => setUserRole(user.id, nextRole));
   };
 

@@ -39,9 +39,16 @@ export function PageHero({
         "relative overflow-hidden rounded-3xl border px-5 py-11 text-center sm:py-14",
         className,
       )}
+      /*
+       * The accent stops come from the page (`accent` / `accentSoft`); the dark
+       * stop comes from the section's surface tone. It used to be a fixed
+       * rgba(5,11,30) — a navy wash sitting under a gold or ember banner, which
+       * is subtle on its own and reads as grubby next to the themed cards below
+       * it.
+       */
       style={{
         borderColor: `${accent}33`,
-        background: `linear-gradient(180deg, ${accent}22 0%, rgba(5,11,30,0.35) 60%, transparent 100%)`,
+        background: `linear-gradient(180deg, ${accent}22 0%, color-mix(in oklab, var(--color-void) 35%, transparent) 60%, transparent 100%)`,
         boxShadow: `0 24px 70px -30px ${accent}aa, inset 0 1px 0 0 rgba(255,255,255,0.07)`,
       }}
     >

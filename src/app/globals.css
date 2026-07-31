@@ -42,6 +42,10 @@
   --color-ink: #f2f7ff;
   --color-ink-muted: #9fb4dd;
   --color-ink-faint: #6b82ad;
+  /* Sits on top of a filled accent — the gradient pills, the active nav tile,
+     the primary button. Near-black in the section's own hue rather than plain
+     #000, which goes muddy over a saturated fill. */
+  --color-ink-on-accent: #041124;
 
   /* ── Type ── */
   --font-display: var(--font-sora), system-ui, sans-serif;
@@ -55,6 +59,185 @@
   /* ── Motion ── */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Section palettes
+
+   Each section of the app gets its own colour ramp, and the whole interface
+   follows: glass panels, the header, every border and focus ring, the
+   scrollbar, the nav card's active row, the sort pills, the primary button.
+
+   HOW ONE BLOCK OF VARIABLES REPAINTS EVERYTHING
+   Tailwind v4 compiles a theme colour to `var(--color-brand-400)`, not to a
+   hex — opacity modifiers included, which come out as
+   `color-mix(in oklab, var(--color-brand-400) 15%, transparent)`. So every
+   `bg-brand-500/15` and `border-brand-300/20` already written across the app is
+   a live reference. Rebind the ramp for a section and all of it moves at once.
+   That's why these are overrides of the existing scale rather than a parallel
+   set of `--accent-*` variables: a new set would have meant rewriting hundreds
+   of class names, and would have left anything missed sitting there in blue.
+
+   `:root:has(…)` rather than a class on some wrapper, because the viewport
+   scrollbar resolves its colours at the root — see SectionTheme.tsx.
+
+   WHAT DELIBERATELY DOES NOT MOVE
+   EXP and stars are always gold (--color-exp), success is always green, danger
+   is always red, and avatars keep their rank colours. Those carry meaning; if
+   gold drifted to coral on Trending, the reward colour would stop being a
+   signal and turn into decoration.
+
+   The surface tones (royal / deep / void / abyss) shift with the ramp because
+   .glass builds its gradient out of them. Without that the panels would keep
+   their navy bodies and only the borders would change, which is precisely the
+   half-themed look this is fixing.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Trending: flame over scorched maroon ── */
+:root:has([data-section="embers"]) {
+  --color-brand-50: #fff3ef;
+  --color-brand-100: #ffe2d8;
+  --color-brand-200: #ffc3ae;
+  --color-brand-300: #ff9d80;
+  --color-brand-400: #ff6b4a;
+  --color-brand-500: #f2452b;
+  --color-brand-600: #cd2e1b;
+  --color-brand-700: #a32517;
+  --color-brand-800: #7c1f18;
+  --color-brand-900: #4d1620;
+  --color-plasma: #ffb347;
+  --color-royal: #5e1b22;
+  --color-royal-lit: #7d2622;
+  --color-deep: #2a0a08;
+  --color-void: #17070b;
+  --color-abyss: #0b0406;
+  --color-ink-on-accent: #2a0703;
+}
+
+/* ── Fresh: violet nebula over deep indigo ── */
+:root:has([data-section="starfield"]) {
+  --color-brand-50: #faf5ff;
+  --color-brand-100: #f1e5ff;
+  --color-brand-200: #e4ccff;
+  --color-brand-300: #d3aefe;
+  --color-brand-400: #c084fc;
+  --color-brand-500: #a855f7;
+  --color-brand-600: #8b3fd9;
+  --color-brand-700: #6d28d9;
+  --color-brand-800: #4f1d95;
+  --color-brand-900: #33116e;
+  --color-plasma: #e879f9;
+  --color-royal: #3f1585;
+  --color-royal-lit: #5320a8;
+  --color-deep: #140a3a;
+  --color-void: #0c0d2e;
+  --color-abyss: #06061a;
+  --color-ink-on-accent: #1c0640;
+}
+
+/* ── Ranks: trophy gold over warm black ── */
+:root:has([data-section="gold"]) {
+  --color-brand-50: #fffbeb;
+  --color-brand-100: #fef3c7;
+  --color-brand-200: #fde68a;
+  --color-brand-300: #fcd34d;
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #eaa304;
+  --color-brand-600: #c47f06;
+  --color-brand-700: #9a5f08;
+  --color-brand-800: #74460c;
+  --color-brand-900: #4a2f0d;
+  --color-plasma: #fde68a;
+  --color-royal: #5a3a10;
+  --color-royal-lit: #7a5014;
+  --color-deep: #2a2008;
+  --color-void: #16110a;
+  --color-abyss: #0a0805;
+  --color-ink-on-accent: #2b1a02;
+}
+
+/* ── Settings: obsidian. Cool steel over near-black ──
+   The only section with no hue of its own. Settings isn't a place anyone browses
+   for pleasure — it's a control surface — so it drops the saturation entirely
+   and lets the orbs behind it supply the light. Steel still reads as an accent
+   against this much black, and dark text on it stays legible. */
+:root:has([data-section="obsidian"]) {
+  --color-brand-50: #f6f8fc;
+  --color-brand-100: #e8edf7;
+  --color-brand-200: #d2dbec;
+  --color-brand-300: #b0bfdb;
+  --color-brand-400: #8ea4cc;
+  --color-brand-500: #6d83b0;
+  --color-brand-600: #53678f;
+  --color-brand-700: #3f5070;
+  --color-brand-800: #2d3a54;
+  --color-brand-900: #1b2237;
+  --color-plasma: #cfe0ff;
+  --color-royal: #232b42;
+  --color-royal-lit: #313b58;
+  --color-deep: #0c0e18;
+  --color-void: #07080f;
+  --color-abyss: #020204;
+  --color-ink-on-accent: #080b14;
+}
+
+/* ── Saved: reading-lamp emerald over warm dark ── */
+:root:has([data-section="library"]) {
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d3fae7;
+  --color-brand-200: #a7f3d0;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #12b981;
+  --color-brand-600: #059a6c;
+  --color-brand-700: #047857;
+  --color-brand-800: #0a5f47;
+  --color-brand-900: #0a3b30;
+  --color-plasma: #5eead4;
+  --color-royal: #0d4b3a;
+  --color-royal-lit: #12654c;
+  --color-deep: #11251c;
+  --color-void: #0a1710;
+  --color-abyss: #04100b;
+  --color-ink-on-accent: #032018;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   The content measure
+
+   How wide a docked page's column is allowed to get. It gets a variable of its
+   own because it isn't only the column's business: the docks are placed one gap
+   outside it (see .dock-column-left), so the two have to be reading from the
+   same number or they'd end up on top of each other.
+
+   WHAT THE SUBTRACTION IS FOR
+   A dock plus its gap is 21.5rem. Reserving one on each side, plus a 1.5rem
+   margin off each screen edge, is 46rem the column can't have. Whatever is left
+   is what it takes, up to its cap.
+
+   THE RESERVATION IS CONSTANT, EVEN WITH A DOCK HIDDEN
+   Deliberate: it means the column is exactly the same width whether the cards
+   are showing or not, so hiding them slides the cards away without moving a
+   single post. A reservation that tracked the open/closed state would reflow
+   the page every time someone toggled a column, which is a lot of movement to
+   pay for a few rem of width.
+
+   The reservation is symmetric whether or not a page actually has both docks,
+   which is what keeps the column dead-centre in the viewport and landing in
+   exactly the same place on every page in the set. Every docked route carries
+   both docks today, so nothing is holding space for a card that never arrives.
+
+   Gated to xl because that's the width at which docks exist at all; below it
+   the pages use their own natural widths.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 80rem) {
+  .measure-reading {
+    --content-measure: min(52rem, calc(100vw - 46rem));
+  }
+  .measure-grid {
+    --content-measure: min(72rem, calc(100vw - 46rem));
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -149,16 +332,28 @@ body::after {
   color: #fff;
 }
 
-/* ── Scrollbar ── */
+/* ── Scrollbar ──
+   Both the track and the thumb are section colours, so the very edge of the
+   window agrees with the page. The thumb runs a gradient down its length rather
+   than sitting flat — at 10px wide that reads as a lit sliver instead of a grey
+   bar, and it's the cheapest possible place to carry the theme. */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: var(--color-abyss); }
 ::-webkit-scrollbar-thumb {
   border-radius: 999px;
   border: 2px solid var(--color-abyss);
-  background: color-mix(in oklab, var(--color-brand-500) 55%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-brand-300) 60%, transparent),
+    color-mix(in oklab, var(--color-brand-600) 70%, transparent)
+  );
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in oklab, var(--color-brand-400) 80%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-brand-200) 85%, transparent),
+    color-mix(in oklab, var(--color-brand-500) 90%, transparent)
+  );
 }
 
 /* ── Focus: visible, on-brand, never removed ── */
@@ -173,6 +368,112 @@ body::after {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @layer components {
+  /*
+   * The app header.
+   *
+   * Was `bg-abyss/75` with a white hairline, which is to say a blue-black bar
+   * on every page regardless of what the page was. It's now built from the
+   * section's own surface tones, so it reads as the top edge of the page rather
+   * than a strip borrowed from somewhere else.
+   *
+   * The gradient runs the other way from a card's: brightest at the top, where
+   * it meets the window edge, fading into the page below.
+   */
+  .app-header {
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-royal) 34%, transparent),
+      color-mix(in oklab, var(--color-abyss) 92%, transparent)
+    );
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border-bottom: 1px solid color-mix(in oklab, var(--color-brand-300) 15%, transparent);
+  }
+
+  /* A filament of section colour along the bottom edge, brightest in the
+     middle. It's what stops the header reading as a flat block, and it's the
+     one place the accent gets to be at full strength. */
+  .app-header::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--color-brand-400) 50%, transparent) 22%,
+      color-mix(in oklab, var(--color-plasma) 60%, transparent) 50%,
+      color-mix(in oklab, var(--color-brand-400) 50%, transparent) 78%,
+      transparent
+    );
+  }
+
+  /*
+   * The site footer band.
+   *
+   * Full-bleed, and built from the section's surface tones like everything else
+   * — so the footer under the gold Ranks page is warm, not navy.
+   */
+  .site-footer {
+    position: relative;
+    border-top: 1px solid color-mix(in oklab, var(--color-brand-300) 14%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-void) 60%, transparent),
+      color-mix(in oklab, var(--color-abyss) 94%, transparent)
+    );
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  /* Accent filament along the top edge, mirroring the one under the header.
+     Bookends the page: the same line of light opens and closes it. */
+  .site-footer::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: -1px;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--color-brand-400) 45%, transparent) 22%,
+      color-mix(in oklab, var(--color-plasma) 55%, transparent) 50%,
+      color-mix(in oklab, var(--color-brand-400) 45%, transparent) 78%,
+      transparent
+    );
+  }
+
+  /*
+   * Footer content width.
+   *
+   * The band is full-bleed but its contents are not, because the docks are
+   * fixed-position and stay pinned over the side gutters however far the page
+   * is scrolled — a genuinely full-width footer would have its outer columns
+   * sitting underneath them.
+   *
+   * It takes everything except the lanes the docks are ACTUALLY using, which
+   * DockProvider works out from their open/closed state. That's the difference
+   * between this and the page column above it: the column holds both lanes open
+   * permanently so it never shifts, while the footer would rather be wide. With
+   * both docks collapsed this is close to the full window.
+   *
+   * 80rem matches the landing page's own container, and is where a row of
+   * footer columns stops gaining anything from more room.
+   *
+   * The 3rem fallback is for pages with no docks at all — the landing page and
+   * Discover — where only the window margins need clearing.
+   */
+  .footer-inner {
+    width: 100%;
+    margin-inline: auto;
+    max-width: min(80rem, calc(100vw - var(--dock-lanes, 3rem)));
+    transition: max-width 0.5s var(--ease-out-expo);
+  }
+
   /* Glass panel — the base surface for every card in the app. */
   .glass {
     background: linear-gradient(
@@ -229,7 +530,7 @@ body::after {
     position: relative;
     overflow: hidden;
     background: linear-gradient(135deg, var(--color-brand-400), var(--color-brand-600));
-    color: #041124;
+    color: var(--color-ink-on-accent);
     font-weight: 700;
     box-shadow:
       0 8px 24px -8px color-mix(in oklab, var(--color-brand-400) 90%, transparent),
@@ -281,7 +582,17 @@ body::after {
    * away the glass entirely. ~86% alpha with a much heavier blur keeps both.
    */
   .popover {
-    background: linear-gradient(165deg, rgba(19, 40, 100, 0.86), rgba(7, 13, 33, 0.9));
+    /* Built from the section's surface tones, not fixed navy. These panels
+       float over every page in the app — the notification list and the account
+       menu especially — so hard-coded blue here meant a blue dropdown hanging
+       over a gold or ember page no matter what else had been themed. The alpha
+       figures are the ones the blur note below is written about; only the hue
+       is coming from the section now. */
+    background: linear-gradient(
+      165deg,
+      color-mix(in oklab, var(--color-royal) 88%, transparent),
+      color-mix(in oklab, var(--color-void) 92%, transparent)
+    );
     backdrop-filter: blur(40px) saturate(170%);
     -webkit-backdrop-filter: blur(40px) saturate(170%);
     border: 1px solid color-mix(in oklab, var(--color-brand-300) 22%, transparent);
@@ -371,6 +682,97 @@ body::after {
     will-change: transform, opacity;
   }
 
+  /* ── Dock columns ───────────────────────────────────────────────────────
+     The fixed columns flanking the feed (see components/shell/NavDock.tsx and
+     components/feed/SideRail.tsx).
+
+     THE OFFSET IS DERIVED, NOT PICKED
+     Docks pinned to `left: 0` look correct on a laptop and absurd on a 27"
+     monitor, where they end up 600px away from the posts with a lake of
+     nothing in between. So they're anchored to the CENTRE instead, and sit
+     exactly one gap outside the post column:
+
+         half the content column   --content-measure / 2
+         the gap                   1.5rem
+         the dock itself           20rem
+                                 ─────────────────────────
+         offset from centre        --content-measure / 2 + 21.5rem
+
+     Written against the measure rather than a hard number because the measure
+     is not one number — a page of posts and the game catalogue want different
+     widths, and the docks have to sit beside whichever one is on screen.
+
+     `max()` stops them sliding off-screen on viewports too narrow to hold all
+     three; by then the measure's own subtraction has already squeezed the
+     column to meet them, so the two clamps land at the same place.
+
+     Height is capped so a long rail scrolls inside its own column rather than
+     stretching the page — these are pinned panels, not page content. */
+  .dock-column {
+    position: fixed;
+    top: 6rem;
+    z-index: 30;
+    width: 20rem;
+    max-height: calc(100dvh - 7rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .dock-column-left {
+    left: max(1.5rem, calc(50% - var(--content-measure) / 2 - 21.5rem));
+  }
+  .dock-column-right {
+    right: max(1.5rem, calc(50% - var(--content-measure) / 2 - 21.5rem));
+  }
+
+  /* Content columns for docked pages.
+     Below xl they're just their own natural widths — no docks exist down there
+     to make room for. From xl up they hand width over to the measure, which is
+     also what the docks are positioned against. */
+  .content-column,
+  .content-column-grid {
+    width: 100%;
+    margin-inline: auto;
+  }
+  .content-column {
+    max-width: 42rem;
+  }
+  .content-column-grid {
+    max-width: 72rem;
+  }
+
+  @media (min-width: 80rem) {
+    .content-column,
+    .content-column-grid {
+      max-width: var(--content-measure);
+    }
+  }
+
+  /* ── Nav row sweep ──────────────────────────────────────────────────────
+     A band of light crossing a nav row on hover, the same gesture .btn-primary
+     makes. It's the one bit of motion in the card, which is why it's a slow
+     travel and a very low-contrast band: at 12% brand on dark glass it reads as
+     light catching a surface, not as a highlight sliding around.
+
+     Parked off to the left at rest, so the gradient's transparent ends mean
+     there's nothing to see until it's summoned. The transition lives ONLY in
+     the hover rule — without that, the band sweeps back across the row in
+     reverse when the pointer leaves, which looks like a bug. */
+  .nav-row-sweep {
+    position: absolute;
+    inset: 0;
+    transform: translateX(-130%);
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      color-mix(in oklab, var(--color-brand-200) 12%, transparent) 50%,
+      transparent 70%
+    );
+  }
+  .nav-row:hover .nav-row-sweep {
+    transform: translateX(130%);
+    transition: transform 0.8s var(--ease-out-expo);
+  }
+
   /* Section heading with a small glowing rule beside it. */
   .rule-label {
     display: flex;
@@ -412,6 +814,12 @@ body::after {
   }
 
   .glow-brand { box-shadow: 0 0 36px -8px color-mix(in oklab, var(--color-brand-400) 85%, transparent); }
+
+  /* Light pooling under a filled accent pill — the active sort tab, the raised
+     compose button. Replaces a hard-coded rgba(56,160,255) that stayed blue on
+     every page no matter what colour the pill above it had turned. */
+  .glow-accent { box-shadow: 0 6px 20px -6px color-mix(in oklab, var(--color-brand-400) 80%, transparent); }
+  .glow-accent-lg { box-shadow: 0 10px 28px -6px color-mix(in oklab, var(--color-brand-400) 85%, transparent); }
   .glow-exp { box-shadow: 0 0 36px -8px color-mix(in oklab, var(--color-exp) 85%, transparent); }
 
   .animate-float { animation: float 6.5s ease-in-out infinite; }
@@ -544,6 +952,23 @@ body::after {
   50% { opacity: 0.9; transform: skewX(-8deg) scaleY(1.06); }
 }
 
+/* Settings — obsidian orbs climbing out of the dark.
+   Slower and heavier than Trending's embers: these are glass beads, not sparks,
+   so they drift rather than race, and they swell slightly on the way up so the
+   field reads as depth instead of a flat sheet of dots. */
+@keyframes orb-rise {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.75); }
+  10% { opacity: 1; }
+  72% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate3d(var(--drift, 0px), -112vh, 0) scale(1.18); }
+}
+
+/* The light on an orb's shoulder, breathing so the field never sits still. */
+@keyframes orb-sheen {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
 /* Saved — dust turning slowly in lamplight. */
 @keyframes dust-float {
   0%, 100% { opacity: 0.15; transform: translate3d(0, 0, 0); }
@@ -590,6 +1015,178 @@ body::after {
 @keyframes dev-spin-reverse {
   from { transform: rotate(360deg); }
   to { transform: rotate(0deg); }
+}
+
+/* ── Welcome-back modal ────────────────────────────────────────────────────
+   The one moment in the app that's pure celebration, so it gets a confetti
+   burst, a sheen and a spring on the handle. Everything is transform/opacity
+   and runs once — nothing here loops in the background while someone reads. */
+
+/* Confetti thrown from the centre of the card. Distance comes in per-particle
+   as --burst-x / --burst-y. */
+@keyframes welcome-burst {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.2); }
+  12% { opacity: 1; }
+  70% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--burst-x, 0), calc(var(--burst-y, 0) + 40px), 0) scale(0.5);
+  }
+}
+
+/* One diagonal highlight crossing the panel as it lands. */
+@keyframes welcome-sheen {
+  from { transform: translateX(0) skewX(-18deg); }
+  to { transform: translateX(320%) skewX(-18deg); }
+}
+
+/* The handle overshoots slightly, then settles. */
+@keyframes welcome-name {
+  0% { opacity: 0; transform: scale(0.7); }
+  60% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Rank-coloured rings pushing out from behind the avatar. */
+@keyframes welcome-ring {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+/* Dwell timer draining along the bottom edge. */
+@keyframes welcome-dwell {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* ── Suspension screen ─────────────────────────────────────────────────────
+   Deliberately the loudest surface in the app. Getting banned should feel like
+   hitting a wall, not like a form validation error. */
+
+/*
+ * Hazard wash.
+ *
+ * Replaces the full-width hazard tape that used to be pinned to the top and
+ * bottom of the viewport: at that scale the diagonal stripes read as clip-art
+ * and fought the card for attention. Kept as a low-opacity texture inside the
+ * card's own header band, where it still says "hazard" without shouting it.
+ */
+.hazard-wash {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(244, 63, 94, 0.5) 0 8px,
+    transparent 8px 16px,
+    rgba(251, 191, 36, 0.35) 16px 24px,
+    transparent 24px 32px
+  );
+  background-size: 45.26px 100%;
+  animation: hazard-scroll 2.4s linear infinite;
+}
+
+@keyframes hazard-scroll {
+  to { background-position: 45.26px 0; }
+}
+
+/* Rotating rim light, shared by the suspension card and the welcome modal.
+   A conic gradient on an oversized square, spun behind the panel — the visible
+   sliver reads as light travelling the rim.
+
+   Rotation only: Tailwind v4 centres the square with the standalone `translate`
+   property, so re-stating the offset here would double it. */
+@keyframes rim-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* One shockwave leaving the card as it lands, then gone. */
+@keyframes ban-shockwave {
+  0% { opacity: 0.85; transform: scale(0.94); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+/* Searchlights raking the lockdown backdrop. */
+@keyframes ban-sweep {
+  0%, 100% { transform: rotate(-15deg); opacity: 0.55; }
+  50% { transform: rotate(15deg); opacity: 1; }
+}
+
+/* Ash drifting down past the sparks going up. */
+@keyframes ban-ash-fall {
+  0% { opacity: 0; transform: translate3d(0, -5vh, 0) rotate(0deg); }
+  12% { opacity: 0.7; }
+  80% { opacity: 0.5; }
+  100% { opacity: 0; transform: translate3d(var(--drift, 0px), 105vh, 0) rotate(var(--spin, 180deg)); }
+}
+
+/* Readout line crawling down the reason panel, like something is scanning it.
+   Driven by background-position rather than a transform: the line is a 2px
+   band inside a full-height layer, so a percentage translate would only move
+   it a couple of pixels. */
+@keyframes ban-scan {
+  0% { background-position: 0 -8px; opacity: 0; }
+  12%, 70% { opacity: 1; }
+  100% { background-position: 0 calc(100% + 8px); opacity: 0; }
+}
+
+/* Content settling in after the card lands. */
+@keyframes ban-settle {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Chromatic split on the headline. Two coloured clones offset a couple of
+   pixels for a beat, then snap back — a broken-signal tic, not a strobe. */
+@keyframes ban-glitch-a {
+  0%, 86%, 100% { opacity: 0; transform: translate(0, 0); clip-path: inset(0 0 0 0); }
+  87% { opacity: 0.9; transform: translate(-3px, -1px); clip-path: inset(12% 0 46% 0); }
+  90% { opacity: 0.9; transform: translate(3px, 1px); clip-path: inset(58% 0 12% 0); }
+  93% { opacity: 0.9; transform: translate(-2px, 0); clip-path: inset(34% 0 34% 0); }
+}
+
+@keyframes ban-glitch-b {
+  0%, 86%, 100% { opacity: 0; transform: translate(0, 0); clip-path: inset(0 0 0 0); }
+  88% { opacity: 0.75; transform: translate(3px, 1px); clip-path: inset(52% 0 20% 0); }
+  91% { opacity: 0.75; transform: translate(-3px, -1px); clip-path: inset(8% 0 62% 0); }
+  94% { opacity: 0.75; transform: translate(2px, 0); clip-path: inset(40% 0 26% 0); }
+}
+
+/* The whole background breathing red. */
+@keyframes ban-throb {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+/* Entrance: a short, sharp shake. Runs once — a looping shake would be
+   punishing to read through. */
+@keyframes ban-slam {
+  0% { opacity: 0; transform: scale(1.12); }
+  55% { opacity: 1; transform: scale(0.985); }
+  68% { transform: translateX(-9px) scale(1); }
+  76% { transform: translateX(7px); }
+  84% { transform: translateX(-4px); }
+  92% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+/* Expanding rings behind the shield. */
+@keyframes ban-ring {
+  0% { transform: scale(0.85); opacity: 0.85; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+
+/* Title flicker — irregular on purpose, like failing neon. */
+@keyframes ban-flicker {
+  0%, 100% { opacity: 1; text-shadow: 0 0 26px rgba(244, 63, 94, 0.9), 0 0 60px rgba(244, 63, 94, 0.45); }
+  42% { opacity: 1; }
+  43% { opacity: 0.72; text-shadow: 0 0 10px rgba(244, 63, 94, 0.6); }
+  45% { opacity: 1; }
+  62% { opacity: 1; }
+  63% { opacity: 0.85; }
+  64% { opacity: 1; }
+}
+
+/* Faint CRT scanlines drifting down over everything. */
+@keyframes scanline-drift {
+  to { background-position: 0 220px; }
 }
 
 /* Page-hero sheen sweeping left to right across the banner. */

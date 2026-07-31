@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { PostCard } from "@/components/post/PostCard";
 import { EmptyState } from "@/components/feed/EmptyState";
+import { SideRailPanel } from "@/components/feed/SideRailPanel";
+import { ContentColumn } from "@/components/shell/ContentColumn";
 import { PageHero } from "@/components/feed/PageHero";
 import { Atmosphere } from "@/components/ui/Atmosphere";
 import { getBookmarkedPosts, getCurrentProfile } from "@/lib/queries";
@@ -24,7 +27,7 @@ export default async function BookmarksPage() {
       {/* Warm lamplight and slow dust — a quiet reading room. */}
       <Atmosphere theme="library" />
 
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+      <ContentColumn docked={!!profile}>
       <PageHero
         icon={<span aria-hidden="true">🔖</span>}
         title="Your Vault"
@@ -51,7 +54,13 @@ export default async function BookmarksPage() {
           ))}
           </div>
         )}
-      </div>
+      </ContentColumn>
+
+      {/* Fixed beside the column, streaming in on its own so the page paints
+          first and never moves. */}
+      <Suspense fallback={null}>
+        <SideRailPanel />
+      </Suspense>
     </>
   );
 }

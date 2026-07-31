@@ -7,6 +7,7 @@ import { AlertCircle, Loader2, Save, Trash2 } from "lucide-react";
 import { deletePost, updatePost } from "@/lib/actions";
 import { ImageDropzone } from "@/components/compose/ImageDropzone";
 import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import type { ActionResult, FeedPostWithViewer } from "@/lib/types";
 import { ratingVerdict } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ function Submit() {
 export function EditPostForm({ post }: { post: FeedPostWithViewer }) {
   const router = useRouter();
   const { push } = useToast();
+  const confirm = useConfirm();
   const [state, action] = useActionState<ActionResult | null, FormData>(updatePost, null);
   const [rating, setRating] = useState(post.rating ?? 8);
   const [deleting, setDeleting] = useState(false);
@@ -52,7 +54,14 @@ export function EditPostForm({ post }: { post: FeedPostWithViewer }) {
   }, [state, push, router, post.id]);
 
   const handleDelete = async () => {
-    if (!confirm("Delete this review permanently? This can't be undone.")) return;
+    const outcome = await confirm({
+      variant: "danger",
+      title: "Delete this review?",
+      body: `"${post.title}" and all of its comments go permanently, along with the EXP it earned. This can't be undone.`,
+      confirmLabel: "Delete permanently",
+    });
+    if (!outcome) return;
+
     setDeleting(true);
     const result = await deletePost(post.id);
     if (result.ok) {

@@ -2,16 +2,11 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ComposerTrigger } from "@/components/feed/ComposerTrigger";
 import { FeedClient } from "@/components/feed/FeedClient";
-import { SideRail } from "@/components/feed/SideRail";
+import { SideRailPanel } from "@/components/feed/SideRailPanel";
 import { FeedSkeleton } from "@/components/feed/FeedSkeleton";
+import { ContentColumn } from "@/components/shell/ContentColumn";
 import { Atmosphere } from "@/components/ui/Atmosphere";
-import {
-  PAGE_SIZE,
-  getCurrentProfile,
-  getFeed,
-  getTopPlayers,
-  getTrendingGames,
-} from "@/lib/queries";
+import { PAGE_SIZE, getCurrentProfile, getFeed } from "@/lib/queries";
 import type { FeedSort } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -45,29 +40,26 @@ export default async function FeedPage({
       <Atmosphere theme="glyphs" />
 
       {/*
-        Three-track grid so the post column sits dead centre in the viewport,
-        the way the original dashboard did. The left track is an empty spacer
-        that exactly matches the right rail's width — without it the rail
-        pushes the feed off-centre, which is what looked lopsided.
+        Just the post column now.
+
+        This used to be a three-track grid whose left track was an invisible
+        spacer, there purely to keep the posts dead-centre in the viewport
+        despite the right rail. Both flanks became fixed-position docks that
+        place themselves off the column's own measure, so the page went back to
+        being one centred column and the grid went away.
+
+        Always `docked` — middleware guarantees a signed-in user on /feed.
       */}
-      <div className="mx-auto grid w-full max-w-[88rem] gap-6 px-4 py-6 sm:px-6 xl:grid-cols-[20rem_minmax(0,42rem)_20rem] xl:justify-center">
-        <div className="hidden xl:block" aria-hidden="true" />
-
-        <div className="min-w-0">
-          <Suspense fallback={<FeedSkeleton />}>
-            <FeedContent
-              sort={sort}
-              page={page}
-              search={search}
-              searchField={searchField}
-            />
-          </Suspense>
-        </div>
-
-        <Suspense fallback={null}>
-          <RailContent />
+      <ContentColumn docked>
+        <Suspense fallback={<FeedSkeleton />}>
+          <FeedContent sort={sort} page={page} search={search} searchField={searchField} />
         </Suspense>
-      </div>
+      </ContentColumn>
+
+      {/* Fixed beside the column, so it streams in without moving the posts. */}
+      <Suspense fallback={null}>
+        <SideRailPanel />
+      </Suspense>
     </>
   );
 }
@@ -126,19 +118,5 @@ async function FeedContent({
         searchField={searchField}
       />
     </div>
-  );
-}
-
-async function RailContent() {
-  const [profile, topPlayers, trendingGames] = await Promise.all([
-    getCurrentProfile(),
-    getTopPlayers(5),
-    getTrendingGames(6),
-  ]);
-
-  if (!profile) return null;
-
-  return (
-    <SideRail profile={profile} topPlayers={topPlayers} trendingGames={trendingGames} />
   );
 }

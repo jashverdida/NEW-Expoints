@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { PostCard } from "@/components/post/PostCard";
 import { PageHero } from "@/components/feed/PageHero";
 import { EmptyState } from "@/components/feed/EmptyState";
+import { SideRailPanel } from "@/components/feed/SideRailPanel";
+import { ContentColumn } from "@/components/shell/ContentColumn";
 import { Atmosphere } from "@/components/ui/Atmosphere";
 import { getCurrentProfile, getFeed } from "@/lib/queries";
 
@@ -29,7 +32,7 @@ export default async function PopularPage() {
       {/* Heat rising from the bottom of the screen. */}
       <Atmosphere theme="embers" />
 
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+      <ContentColumn docked={!!profile}>
       <PageHero
         icon={<span aria-hidden="true">🔥</span>}
         title="Trending Now"
@@ -58,7 +61,13 @@ export default async function PopularPage() {
           </div>
         )}
         </div>
-      </div>
+      </ContentColumn>
+
+      {/* Fixed beside the column, streaming in on its own so the posts paint
+          first and never move. */}
+      <Suspense fallback={null}>
+        <SideRailPanel />
+      </Suspense>
     </>
   );
 }
