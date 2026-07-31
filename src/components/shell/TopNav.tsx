@@ -4,6 +4,7 @@ import { Logo } from "@/components/ui/Logo";
 import { SearchBar } from "@/components/shell/SearchBar";
 import { NotificationBell } from "@/components/shell/NotificationBell";
 import { UserMenu } from "@/components/shell/UserMenu";
+import { UserManual } from "@/components/manual/UserManual";
 import type { AppNotification, Profile } from "@/lib/types";
 
 /**
@@ -63,6 +64,11 @@ export function TopNav({
               <Shield className="h-4 w-4" />
             </Link>
           )}
+
+          {/* Left of the bell, and built as its visual twin — same 40px pill,
+              same border, same hover. The manual is chrome, not content, so it
+              belongs with the account cluster rather than beside the wordmark. */}
+          <UserManual />
 
           <NotificationBell
             userId={profile.id}
