@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { BookOpen } from "lucide-react";
 import { useT } from "@/components/shell/PrefsProvider";
 import type { Translate } from "@/lib/i18n";
@@ -80,7 +81,23 @@ export function UserManual() {
         <BookOpen className="h-4 w-4" />
       </button>
 
-      {open && <ManualOverlay onClose={closeManual} t={t} />}
+      {/*
+        PORTALLED TO <body>, AND IT HAS TO BE.
+
+        The trigger lives in the header, and the header carries a
+        `backdrop-filter` for its frosted glass. A filtered element becomes the
+        containing block for every `position: fixed` descendant — so rendered in
+        place, the overlay's `inset: 0` resolved against the HEADER's box rather
+        than the viewport. The dim covered the search bar and nothing else, and
+        the book got squashed into that strip while the dashboard carried on
+        painting over the top of it.
+
+        No amount of z-index fixes that; the overlay has to leave the header's
+        containing block entirely. `open` is only ever true after a click or the
+        deep-link effect, both of which run on the client, so `document` is
+        always there by the time this evaluates.
+      */}
+      {open && createPortal(<ManualOverlay onClose={closeManual} t={t} />, document.body)}
     </>
   );
 }
