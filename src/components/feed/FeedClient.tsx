@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { PostCard } from "@/components/post/PostCard";
 import { SortTabs } from "@/components/feed/SortTabs";
 import { EmptyState } from "@/components/feed/EmptyState";
+import { EndOfFeed } from "@/components/feed/EndOfFeed";
 import { fetchWithProgress } from "@/components/ui/NavProgress";
 import type { FeedPostWithViewer, FeedSort, Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -265,6 +266,11 @@ export function FeedClient({
               </button>
             </nav>
           )}
+
+          {/* Only once there is genuinely nothing after this. On any earlier
+              page the pagination already says where you are, and claiming the
+              end there would be a lie. */}
+          {!data.hasMore && <EndOfFeed />}
         </>
       )}
     </div>

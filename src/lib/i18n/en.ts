@@ -43,6 +43,10 @@ export const en = {
   "sort.new": "New",
   "sort.top": "Top",
 
+  /* ── Feed ── */
+  "feed.end": "That's everything",
+  "feed.end.hint": "You have reached the end of the list.",
+
   /* ── Right dock ── */
   "rail.yourRun": "Your run",
   "rail.topPlayers": "Top players",

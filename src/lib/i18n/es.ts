@@ -39,6 +39,10 @@ export const es: Dictionary = {
   "sort.new": "Nuevo",
   "sort.top": "Top",
 
+  /* ── Feed ── */
+  "feed.end": "Eso es todo",
+  "feed.end.hint": "Has llegado al final de la lista.",
+
   /* ── Right dock ── */
   "rail.yourRun": "Tu progreso",
   "rail.topPlayers": "Mejores jugadores",

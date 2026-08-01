@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { PostCard } from "@/components/post/PostCard";
 import { EmptyState } from "@/components/feed/EmptyState";
+import { EndOfFeed } from "@/components/feed/EndOfFeed";
 import { SideRailPanel } from "@/components/feed/SideRailPanel";
 import { ContentColumn } from "@/components/shell/ContentColumn";
 import { PageHero } from "@/components/feed/PageHero";
@@ -52,6 +53,7 @@ export default async function BookmarksPage() {
           {posts.map((post) => (
             <PostCard key={post.id} post={post} viewer={profile} />
           ))}
+          <EndOfFeed />
           </div>
         )}
       </ContentColumn>

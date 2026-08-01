@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { PostCard } from "@/components/post/PostCard";
 import { EmptyState } from "@/components/feed/EmptyState";
+import { EndOfFeed } from "@/components/feed/EndOfFeed";
 import { ToastProvider } from "@/components/ui/Toast";
 import { Atmosphere } from "@/components/ui/Atmosphere";
 import { GuestPromptProvider } from "@/components/auth/GuestPrompt";
@@ -135,6 +136,7 @@ export default async function DiscoverPage({
               {feed.posts.map((post) => (
                 <PostCard key={post.id} post={post} viewer={viewer} />
               ))}
+              <EndOfFeed />
             </div>
           )}
         </main>

@@ -77,13 +77,29 @@ export function PrefsProvider({
   );
 }
 
+/**
+ * Throws without a provider, deliberately: everything that reads or writes a
+ * preference lives on a settings screen, well inside the shell, and silently
+ * handing back defaults there would hide a real wiring mistake.
+ */
 export function usePrefs() {
   const ctx = useContext(PrefsContext);
   if (!ctx) throw new Error("usePrefs() must be called inside <PrefsShell>.");
   return ctx;
 }
 
-/** Shorthand for the common case. */
+/**
+ * Translation, and unlike usePrefs this one does NOT throw.
+ *
+ * Shared components get rendered outside the app shell — /discover sits in its
+ * own route group with no PrefsShell above it, and it renders post cards like
+ * everywhere else. A hard throw would turn "this page can't read your language
+ * preference", which is cosmetic, into a blank screen, which is not. English is
+ * the source dictionary, so the fallback is the real text rather than raw keys.
+ */
 export function useT(): Translate {
-  return usePrefs().t;
+  const ctx = useContext(PrefsContext);
+  return ctx?.t ?? FALLBACK_T;
 }
+
+const FALLBACK_T = makeT("en");

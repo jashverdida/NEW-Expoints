@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { PostCard } from "@/components/post/PostCard";
 import { PageHero } from "@/components/feed/PageHero";
 import { EmptyState } from "@/components/feed/EmptyState";
+import { EndOfFeed } from "@/components/feed/EndOfFeed";
 import { SideRailPanel } from "@/components/feed/SideRailPanel";
 import { ContentColumn } from "@/components/shell/ContentColumn";
 import { Atmosphere } from "@/components/ui/Atmosphere";
@@ -58,6 +59,7 @@ export default async function PopularPage() {
             {feed.posts.map((post) => (
               <PostCard key={post.id} post={post} viewer={profile} />
             ))}
+            <EndOfFeed />
           </div>
         )}
         </div>

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { MessageSquare, Star, Zap } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
+import { ProfileHoverCard } from "@/components/profile/ProfileHoverCard";
 import { LevelBadge } from "@/components/ui/LevelBadge";
 import { getCurrentProfile, getLeaderboard, type LeaderboardScope } from "@/lib/queries";
 import { PageHero } from "@/components/feed/PageHero";
@@ -134,12 +135,14 @@ export default async function LeaderboardPage({
                     {i + 1}
                   </span>
 
-                  <Avatar
-                    username={player.username}
-                    avatarUrl={player.avatar_url}
-                    level={player.level}
-                    size={isPodium ? "md" : "sm"}
-                  />
+                  <ProfileHoverCard username={player.username}>
+                    <Avatar
+                      username={player.username}
+                      avatarUrl={player.avatar_url}
+                      level={player.level}
+                      size={isPodium ? "md" : "sm"}
+                    />
+                  </ProfileHoverCard>
 
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-2">

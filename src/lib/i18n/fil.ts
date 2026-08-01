@@ -40,6 +40,10 @@ export const fil: Dictionary = {
   "sort.new": "Bago",
   "sort.top": "Tuktok",
 
+  /* ── Feed ── */
+  "feed.end": "Iyon na ang lahat",
+  "feed.end.hint": "Narating mo na ang dulo ng listahan.",
+
   /* ── Right dock ── */
   "rail.yourRun": "Progreso mo",
   "rail.topPlayers": "Nangungunang players",

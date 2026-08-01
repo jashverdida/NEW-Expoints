@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
+import { ProfileHoverCard } from "@/components/profile/ProfileHoverCard";
 import { AdminBadge, LevelBadge } from "@/components/ui/LevelBadge";
 import { StarButton } from "@/components/post/StarButton";
 import { BookmarkButton } from "@/components/post/BookmarkButton";
@@ -134,14 +135,16 @@ export function PostCard({
 
       {/* ── Header ── */}
       <header className="relative z-10 flex items-start gap-3">
-        <Link href={`/u/${post.author_username}`} className="shrink-0">
-          <Avatar
-            username={post.author_username}
-            avatarUrl={post.author_avatar_url}
-            level={post.author_level}
-            size={compact ? "sm" : "md"}
-          />
-        </Link>
+        <ProfileHoverCard username={post.author_username}>
+          <Link href={`/u/${post.author_username}`} className="shrink-0">
+            <Avatar
+              username={post.author_username}
+              avatarUrl={post.author_avatar_url}
+              level={post.author_level}
+              size={compact ? "sm" : "md"}
+            />
+          </Link>
+        </ProfileHoverCard>
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
