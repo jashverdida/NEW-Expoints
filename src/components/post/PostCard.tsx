@@ -161,7 +161,26 @@ export function PostCard({
           <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-ink-faint">
             <span className="truncate">@{post.author_username}</span>
             <span aria-hidden="true">·</span>
-            <time dateTime={post.created_at} title={new Date(post.created_at).toLocaleString()}>
+            {/*
+              suppressHydrationWarning, and it is the right tool rather than a
+              silencer.
+
+              Both of these legitimately differ between server and client, by
+              design. `toLocaleString()` formats in the runtime's own locale —
+              the server renders 28/07/2026 where a US browser renders
+              7/28/2026 — and pinning a locale to make them agree would mean
+              showing everyone the server's date format instead of their own.
+              `timeAgo` is relative to now, so a post can tick over from "4d" to
+              "5d" between render and hydration.
+
+              React's own guidance for timestamps is exactly this: let the
+              client value win and tell React the difference is expected.
+            */}
+            <time
+              dateTime={post.created_at}
+              title={new Date(post.created_at).toLocaleString()}
+              suppressHydrationWarning
+            >
               {timeAgo(post.created_at)}
             </time>
             {!compact && (

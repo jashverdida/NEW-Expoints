@@ -47,7 +47,7 @@ function loadProfile(username: string) {
 }
 
 /** Long enough that skimming a feed doesn't fire cards; short enough to feel instant when meant. */
-const OPEN_DELAY = 380;
+const OPEN_DELAY = 300;
 const CARD_WIDTH = 300;
 
 /**
@@ -77,23 +77,50 @@ export function ProfileHoverCard({
   const reduce = useReducedMotion();
   const anchorRef = useRef<HTMLSpanElement>(null);
   const timer = useRef<number | undefined>(undefined);
+  /** Whether the pointer is still on the trigger. Read after the fetch. */
+  const hovering = useRef(false);
 
   const [profile, setProfile] = useState<CardProfile | null>(null);
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
 
   const close = useCallback(() => {
+    hovering.current = false;
     window.clearTimeout(timer.current);
     setPosition(null);
   }, []);
 
   const open = useCallback(() => {
+    hovering.current = true;
     window.clearTimeout(timer.current);
+
+    /*
+     * The request starts NOW, not when the delay elapses.
+     *
+     * It used to be fired inside the timeout, so the first hover on a fresh
+     * page cost the delay AND a round trip end to end — which is why the card
+     * felt like it wasn't working and then arrived late. Kicking it off here
+     * lets the network overlap the delay, and by the time the delay is up the
+     * response is usually already sitting in the cache.
+     */
+    const pending = loadProfile(username);
+
     timer.current = window.setTimeout(async () => {
       const anchor = anchorRef.current;
       if (!anchor) return;
 
-      const data = await loadProfile(username);
-      if (!data) return;
+      const data = await pending;
+
+      /*
+       * THE STRANDED-CARD GUARD.
+       *
+       * Clearing the timeout does nothing once it has already fired — the async
+       * callback is past that point and still holding a promise. So a pointer
+       * that moved on during the fetch used to get a card anyway, appearing
+       * somewhere it was no longer hovering, with no mouseleave left to come
+       * and dismiss it. That is how two of them ended up stacked on screen with
+       * no way to clear them short of a reload.
+       */
+      if (!hovering.current || !data) return;
 
       // Measured after the fetch, so a page that scrolled while the request was
       // in flight still places the card against where the avatar is now.
@@ -129,6 +156,24 @@ export function ProfileHoverCard({
 
   // A hover that outlives its trigger would strand the card on screen.
   useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  /*
+   * Scrolling or resizing dismisses it.
+   *
+   * The card is fixed-positioned against coordinates measured once, so the page
+   * moving underneath leaves it pointing at nothing. Capture phase, because the
+   * dock columns scroll inside themselves and those events never reach the
+   * window otherwise.
+   */
+  useEffect(() => {
+    if (!position) return;
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [position, close]);
 
   return (
     <>

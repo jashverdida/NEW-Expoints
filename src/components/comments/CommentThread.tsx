@@ -84,10 +84,13 @@ function CommentNode({
               </Link>
               <LevelBadge level={comment.author.level} size="xs" />
               {comment.author.role === "admin" && <AdminBadge />}
+              {/* Locale-formatted and relative — both differ between server
+                  and client on purpose. See PostCard for the full reasoning. */}
               <time
                 dateTime={comment.created_at}
                 title={new Date(comment.created_at).toLocaleString()}
                 className="text-xs text-ink-faint"
+                suppressHydrationWarning
               >
                 {timeAgo(comment.created_at)}
               </time>
