@@ -97,7 +97,21 @@ export function ProfileHoverCard({
 
       // Measured after the fetch, so a page that scrolled while the request was
       // in flight still places the card against where the avatar is now.
-      const rect = anchor.getBoundingClientRect();
+      let rect = anchor.getBoundingClientRect();
+
+      /*
+       * Belt and braces for a zero-sized anchor.
+       *
+       * An element that generates no box — `display: contents`, which this
+       * wrapper used to use — reports a rect of all zeros, and the card lands
+       * in the top-left corner of the window instead of beside the avatar. The
+       * wrapper is a real inline-flex box now, so this shouldn't fire; it stays
+       * because the failure is silent and looks like a positioning bug rather
+       * than a measurement one.
+       */
+      if (!rect.width && !rect.height && anchor.firstElementChild) {
+        rect = anchor.firstElementChild.getBoundingClientRect();
+      }
       const left = Math.min(
         Math.max(12, rect.left + rect.width / 2 - CARD_WIDTH / 2),
         window.innerWidth - CARD_WIDTH - 12,
@@ -118,13 +132,22 @@ export function ProfileHoverCard({
 
   return (
     <>
+      {/*
+        A real box, not `display: contents`.
+
+        `contents` was the tidy choice — no extra element in the flex row — but
+        an element that generates no box cannot be measured, and the card has to
+        be placed against the avatar. Both call sites put this straight into a
+        flex row where the avatar was already `shrink-0`, so an inline-flex
+        wrapper carrying the same rule sits exactly where the avatar did.
+      */}
       <span
         ref={anchorRef}
         onMouseEnter={open}
         onMouseLeave={close}
         onFocus={open}
         onBlur={close}
-        className="contents"
+        className="inline-flex shrink-0"
       >
         {children}
       </span>
@@ -140,7 +163,7 @@ export function ProfileHoverCard({
                 exit={{ opacity: 0, y: -4, scale: 0.98 }}
                 transition={reduce ? { duration: 0 } : { duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                 style={{ top: position.top, left: position.left, width: CARD_WIDTH }}
-                className="popover pointer-events-none fixed z-[80] overflow-hidden rounded-2xl"
+                className="popover pointer-events-none fixed z-80 overflow-hidden rounded-2xl"
               >
                 {/* Banner strip. Falls back to a brand wash rather than blank
                     space — an empty band reads as a loading bug. */}
@@ -187,7 +210,7 @@ export function ProfileHoverCard({
                       { label: t("rail.comments"), value: profile.comment_count },
                       { label: t("rail.stars"), value: profile.stars_received },
                     ].map((stat) => (
-                      <div key={stat.label} className="rounded-lg bg-white/[0.04] py-1.5">
+                      <div key={stat.label} className="rounded-lg bg-white/4 py-1.5">
                         <dd className="stat text-sm font-bold text-ink">
                           {compactNumber(stat.value)}
                         </dd>
